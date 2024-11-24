@@ -13,12 +13,17 @@
       <h1>Music Player</h1>
       <div class="current-folder">Current Folder: <span id="folder-name">None</span></div>
     </div>
+    <div class="progress-bar-container">
+        <span id="current-time">00:00</span>
+        <input type="range" id="progress-bar" value="0" min="0" max="100">
+        <span id="total-time">00:00</span>
+    </div> 
     <div class="controls">
       <button id="prev"><i class="fas fa-step-backward"></i></button>
       <button id="play"><i class="fas fa-play"></i></button>
       <button id="next"><i class="fas fa-step-forward"></i></button>
       <button id="mode"><i class="fas fa-random"></i></button>
-    </div>
+    </div>     
     <div class="file-list">
       <h2>Files:</h2>
       <ul id="file-list"></ul>
