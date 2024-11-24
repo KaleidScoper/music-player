@@ -1,9 +1,15 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
   color: #333;
   text-align: center;
   padding: 20px;
+
+  background-color: #f5f5f5;
+  background-image: url('background.jpg');
+  background-size: cover; /* 确保图片覆盖整个屏幕 */
+  background-repeat: no-repeat; /* 防止背景图片重复 */
+  background-attachment: fixed; /* 固定背景图片，滚动页面时不会移动 */
+  background-position: center; /* 居中显示背景图片 */
 }
 
 .player-container {
