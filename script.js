@@ -41,10 +41,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function playSong(index) {
-      currentIndex = index;
-      audioPlayer.src = `music/${folderSelect.value}/${songs[index]}`;
-      audioPlayer.play();
-  }
+    currentIndex = index;
+    const encodedFilename = encodeURIComponent(songs[index]); // URL 编码文件名
+    audioPlayer.src = `music/${folderSelect.value}/${encodedFilename}`;
+    audioPlayer.play();
+}
 
   // 播放模式
   document.getElementById("btn-loop").addEventListener("click", () => {
