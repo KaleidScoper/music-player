@@ -1,35 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music Player</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <div class="music-player">
-    <div class="header">
-      <h1>Music Player</h1>
-      <div class="current-folder">Current Folder: <span id="folder-name">None</span></div>
+    <div class="player-container">
+        <h1>🎵 在线音乐播放器</h1>
+        <div class="playlist-selector">
+            <label for="folder-select">选择歌单：</label>
+            <select id="folder-select"></select>
+        </div>
+        <div class="playlist">
+            <h2>当前歌单：<span id="current-folder"></span></h2>
+            <ul id="song-list"></ul>
+        </div>
+        <div class="controls">
+            <audio id="audio-player" controls></audio>
+            <div class="playback-options">
+                <button id="btn-loop"><i class="fa fa-repeat"></i> 单曲循环</button>
+                <button id="btn-sequential"><i class="fa fa-bars"></i> 顺序播放</button>
+                <button id="btn-random"><i class="fa fa-random"></i> 随机播放</button>
+            </div>
+        </div>
     </div>
-    <div class="progress-bar-container">
-        <span id="current-time">00:00</span>
-        <input type="range" id="progress-bar" value="0" min="0" max="100">
-        <span id="total-time">00:00</span>
-    </div> 
-    <div class="controls">
-      <button id="prev"><i class="fas fa-step-backward"></i></button>
-      <button id="play"><i class="fas fa-play"></i></button>
-      <button id="next"><i class="fas fa-step-forward"></i></button>
-      <button id="mode"><i class="fas fa-random"></i></button>
-    </div>     
-    <div class="file-list">
-      <h2>Files:</h2>
-      <ul id="file-list"></ul>
-    </div>
-    <audio id="audio-player" controls hidden></audio>
-  </div>
-  <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

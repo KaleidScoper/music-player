@@ -1,93 +1,70 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f4f4f4;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  
-  .music-player {
-    width: 400px;
-    padding: 20px;
-    background: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    text-align: center;
-  }
-  
-  .header {
-    margin-bottom: 20px;
-  }
-  
-  .controls button {
-    background: none;
-    border: none;
-    font-size: 24px;
-    margin: 0 10px;
-    cursor: pointer;
-  }
-  
-  .controls button:focus {
-    outline: none;
-  }
-  
-  .file-list {
-    text-align: left;
-  }
-  
-  .file-list ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .file-list li {
-    cursor: pointer;
-    padding: 5px;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .file-list li:hover {
-    background: #f0f0f0;
-  }
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  text-align: center;
+  padding: 20px;
+}
 
-  .progress-bar-container {
-    display: flex;
-    align-items: center;
-    margin: 10px 0;
-  }
-  
-  #progress-bar {
-    flex-grow: 1;
-    margin: 0 10px;
-    height: 5px;
-    background: #ddd;
-    border-radius: 5px;
-    appearance: none;
-  }
-  
-  #progress-bar::-webkit-slider-thumb {
-    appearance: none;
-    width: 12px;
-    height: 12px;
-    background: #333;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-  
-  #progress-bar::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    background: #333;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-  
-  #current-time, #total-time {
-    font-size: 12px;
-    color: #666;
-  }
-  
+.player-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.playlist-selector {
+  margin-bottom: 20px;
+}
+
+#folder-select {
+  font-size: 16px;
+  padding: 5px;
+}
+
+.playlist {
+  margin-top: 20px;
+}
+
+#song-list {
+  list-style: none;
+  padding: 0;
+}
+
+#song-list li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#song-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.controls {
+  margin-top: 20px;
+}
+
+.playback-options button {
+  margin: 5px;
+  font-size: 16px;
+  padding: 10px;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.playback-options button:hover {
+  background-color: #0056b3;
+}
