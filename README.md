@@ -1,4 +1,4 @@
-# music_player
+# music-player
 
 极简网页音乐播放器，用于存放私人歌单。
 
