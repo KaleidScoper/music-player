@@ -45,6 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const encodedFilename = encodeURIComponent(songs[index]); // URL 编码文件名
     audioPlayer.src = `music/${folderSelect.value}/${encodedFilename}`;
     audioPlayer.play();
+
+    // 更新“正在播放的音乐”
+    const nowPlayingTitle = document.getElementById("now-playing-title");
+    nowPlayingTitle.textContent = songs[index];
 }
 
   // 播放模式
@@ -64,12 +68,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   audioPlayer.addEventListener("ended", () => {
-      if (playbackMode === "sequential") {
-          currentIndex = (currentIndex + 1) % songs.length;
-          playSong(currentIndex);
-      } else if (playbackMode === "random") {
-          currentIndex = Math.floor(Math.random() * songs.length);
-          playSong(currentIndex);
-      }
-  });
+    if (playMode === "repeat") {
+        // 单曲循环
+        playSong(currentIndex);
+    } else if (playMode === "shuffle") {
+        // 随机播放
+        const nextIndex = Math.floor(Math.random() * songs.length);
+        playSong(nextIndex);
+    } else {
+        // 顺序播放
+        const nextIndex = (currentIndex + 1) % songs.length;
+        playSong(nextIndex);
+    }
+});
+
 });

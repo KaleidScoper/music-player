@@ -68,3 +68,13 @@ h1 {
 .playback-options button:hover {
   background-color: #0056b3;
 }
+
+#now-playing {
+  margin: 20px 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+#now-playing-title {
+  color: #007BFF; /* 蓝色字体 */
+}
