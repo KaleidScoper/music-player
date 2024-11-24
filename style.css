@@ -83,13 +83,40 @@ h1 {
   color: #fff;
 }
 
-
 #now-playing {
   margin: 20px 0;
   font-size: 18px;
   font-weight: bold;
   color: #333;
 }
+
 #now-playing-title {
   color: #007BFF; /* 蓝色字体 */
+}
+
+.pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  font-size: 14px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.pagination button:hover {
+  background-color: #0056b3;
+}
+
+.pagination button.active {
+  background-color: #28a745; /* 绿色 */
+  color: #fff;
 }
