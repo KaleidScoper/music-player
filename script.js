@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const pagination = document.getElementById("pagination");
 
     let songs = [];
+    let playbackMode = "sequential"; // 默认顺序播放
     let currentIndex = 0;
     let currentPage = 1; // 当前页码
     const songsPerPage = 10; // 每页显示的歌曲数
@@ -83,4 +84,45 @@ document.addEventListener("DOMContentLoaded", () => {
         audioPlayer.play();
         nowPlayingTitle.textContent = songs[index]; // 更新当前播放的歌曲
     }
+
+    // 播放模式按钮事件处理
+    function setActiveButton(buttonId) {
+        // 移除所有按钮的 active 类
+        document.querySelectorAll(".playback-options button").forEach(button => {
+            button.classList.remove("active");
+        });
+        // 为当前按钮添加 active 类
+        document.getElementById(buttonId).classList.add("active");
+    }
+
+    document.getElementById("btn-loop").addEventListener("click", () => {
+        playbackMode = "loop";
+        audioPlayer.loop = true;
+        setActiveButton("btn-loop");
+    });
+
+    document.getElementById("btn-sequential").addEventListener("click", () => {
+        playbackMode = "sequential";
+        audioPlayer.loop = false;
+        setActiveButton("btn-sequential");
+    });
+
+    document.getElementById("btn-random").addEventListener("click", () => {
+        playbackMode = "random";
+        audioPlayer.loop = false;
+        setActiveButton("btn-random");
+    });
+
+    // 自动播放下一首歌曲
+    audioPlayer.addEventListener("ended", () => {
+        if (playbackMode === "loop") {
+            playSong(currentIndex);
+        } else if (playbackMode === "random") {
+            const nextIndex = Math.floor(Math.random() * songs.length);
+            playSong(nextIndex);
+        } else if (playbackMode === "sequential") {
+            const nextIndex = (currentIndex + 1) % songs.length;
+            playSong(nextIndex);
+        }
+    });
 });
