@@ -53,6 +53,7 @@ h1 {
   margin-top: 20px;
 }
 
+/* 默认按钮样式 */
 .playback-options button {
   margin: 5px;
   font-size: 16px;
@@ -65,9 +66,17 @@ h1 {
   transition: background-color 0.3s;
 }
 
+/* 悬停样式 */
 .playback-options button:hover {
   background-color: #0056b3;
 }
+
+/* 激活状态的按钮样式 */
+.playback-options button.active {
+  background-color: #28a745; /* 绿色 */
+  color: #fff;
+}
+
 
 #now-playing {
   margin: 20px 0;
