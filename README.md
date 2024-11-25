@@ -21,7 +21,7 @@
 
 1. 在你的网站的根目录执行此命令：
 
-```bash
+```
 git clone https://github.com/KaleidScoper/music-player.git
 ```
 2. 访问http://你的域名/music-player/index.html
