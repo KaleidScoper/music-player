@@ -3,25 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线溜冰</title>
+    <title>在线溜冰音乐播放器</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="player-container">
-        <h1>🎵 在线溜冰 🎵</h1>
+        <h1>🎵 在线溜冰音乐播放器 🎵</h1>
+        
+        <!-- 设置面板 -->
+        <div class="settings-panel">
+            <!-- 配色方案设置 -->
+            <div class="settings-card">
+                <h3><i class="fa fa-palette"></i> 配色方案</h3>
+                <div class="theme-selector">
+                    <label for="theme-select">选择主题：</label>
+                    <select id="theme-select">
+                        <option value="dark">暗色主题（默认）</option>
+                        <option value="light">浅色主题</option>
+                        <option value="default">蓝紫渐变</option>
+                        <option value="green">绿意盎然</option>
+                        <option value="orange">橙暖阳光</option>
+                        <option value="purple">紫色梦幻</option>
+                        <option value="red">红色热情</option>
+                        <option value="cyan">青蓝清新</option>
+                        <option value="image">使用图片</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 自选歌单播放设置 -->
+            <div class="settings-card">
+                <h3><i class="fa fa-list"></i> 自选歌单播放</h3>
+                <div class="playlist-selection-settings">
+                    <div class="setting-header">
+                        <span>启用自选歌单播放</span>
+                        <label class="switch">
+                            <input type="checkbox" id="cross-playlist-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div id="playlist-selection" class="playlist-selection" style="display: none;">
+                        <p>选择要包含的歌单：</p>
+                        <div id="playlist-checkboxes" class="playlist-checkboxes"></div>
+                        <button id="apply-cross-playlist" class="apply-btn">应用设置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 歌单选择 -->
         <div class="playlist-selector">
             <label for="folder-select">选择歌单：</label>
             <select id="folder-select"></select>
         </div>
+        
+        <!-- 歌曲列表 -->
         <div class="playlist">
             <h2>当前歌单：<span id="current-folder"></span></h2>
             <ul id="song-list"></ul>
         </div>
+        
+        <!-- 分页 -->
         <div id="pagination" class="pagination"></div>
+        
+        <!-- 播放信息 -->
         <div id="now-playing">
             正在播放：<span id="now-playing-title">无</span>
-        </div>        
+        </div>
+        
+        <!-- 播放控制 -->
         <div class="controls">
             <audio id="audio-player" controls></audio>
             <div class="playback-options">
@@ -30,6 +81,12 @@
                 <button id="btn-random"><i class="fa fa-random"></i> 随机播放</button>
             </div>
         </div>
+        
+        <!-- 歌词显示 -->
+        <div id="lyrics-container" class="lyrics-container">
+            <div id="lyrics-display" class="lyrics-display"></div>
+        </div>
+        
         <p>代码托管于<a href="https://github.com/KaleidScoper/music-player" target="_blank">Github</a>，有Bug请直接提交Issues。</p>
     </div>
     <script src="script.js"></script>
