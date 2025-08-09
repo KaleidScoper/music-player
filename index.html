@@ -83,7 +83,14 @@
         </div>
         
         <!-- 歌词显示 -->
-        <div id="lyrics-container" class="lyrics-container">
+        <div class="lyrics-header">
+            <label class="toggle-translation">
+                <input type="checkbox" id="toggle-translation" checked>
+                <span>显示翻译</span>
+                <i class="fa fa-info-circle" title="若同一时间戳存在两行歌词，前一行视为原文，后一行视为翻译；超过两行的部分将被忽略。"></i>
+            </label>
+        </div>
+        <div id="lyrics-container" class="lyrics-container" aria-hidden="false">
             <div id="lyrics-display" class="lyrics-display"></div>
         </div>
         

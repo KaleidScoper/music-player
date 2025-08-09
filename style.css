@@ -614,63 +614,87 @@ input:checked + .slider:before {
 }
 
 .lyrics-container {
-  margin-top: 25px;
-  padding: 20px;
+  margin-top: 10px;
+  padding: 16px 20px;
   background: var(--container-bg);
-  border-radius: 15px;
+  border-radius: 12px;
   border: 1px solid var(--border-color);
-  min-height: 150px;
-  max-height: 300px;
-  overflow-y: auto;
+  height: 150px;
+  overflow: hidden;
+  position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .lyrics-display {
   text-align: center;
-  line-height: 1.8;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
+
+/* 动画：仅在容器上标记动画方向时启用过渡，营造滚动感 */
+/* 取消动画，恢复静态显示 */
 
 .lyrics-line {
-  margin: 8px 0;
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  opacity: 0.7;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: none; /* 取消动画 */
   color: var(--text-color);
+  white-space: pre-wrap;
+}
+.lyric-prev {
+  opacity: 0.45;
+  font-size: 0.9em;
+}
+.lyric-current {
+  opacity: 1;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+.lyric-next {
+  opacity: 0.45;
+  font-size: 0.9em;
 }
 
-.lyrics-line.active {
-  background: var(--active-color);
-  color: var(--primary-color);
-  font-weight: bold;
-  opacity: 1;
-  transform: scale(1.05);
+.lyrics-empty {
+  opacity: 0.6;
+  font-size: 1.05em;
 }
 
 .lyrics-translation {
-  font-size: 0.85em;
+  font-size: 0.82em;
   color: var(--text-muted);
   margin-top: 2px;
   font-style: italic;
 }
 
-.lyrics-container::-webkit-scrollbar {
-  width: 6px;
-}
+/* 隐藏滚动条（多浏览器） */
+.lyrics-container::-webkit-scrollbar { width: 0; height: 0; }
+.lyrics-container { scrollbar-width: none; }
 
-.lyrics-container::-webkit-scrollbar-track {
-  background: var(--border-color);
-  border-radius: 3px;
+/* 歌词头部（翻译开关） */
+.lyrics-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
 }
-
-.lyrics-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-  border-radius: 3px;
+.toggle-translation {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-color);
+  background: var(--container-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 10px;
 }
-
-.lyrics-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-}
+.toggle-translation input { cursor: pointer; }
+.toggle-translation i { color: var(--text-muted); }
 
 @media (max-width: 768px) {
   .player-container {
