@@ -367,9 +367,44 @@ h1 {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* 图片主题悬停时的特殊效果 */
+.theme-color[data-theme="image"]:hover .color-circle {
+  border-color: #4ecdc4;
+  box-shadow: 
+    0 0 0 2px #4ecdc4, 
+    0 0 15px rgba(78, 205, 196, 0.5),
+    0 0 30px rgba(78, 205, 196, 0.3);
+  transform: scale(1.1);
+}
+
 .theme-color.selected .color-circle {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px var(--primary-color), 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* 图片主题选中时的特殊效果 */
+.theme-color[data-theme="image"].selected .color-circle {
+  box-shadow: 
+    0 0 20px rgba(255, 107, 107, 0.6),
+    0 0 40px rgba(255, 107, 107, 0.3),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
+  animation: imageThemePulse 2s ease-in-out infinite;
+}
+
+@keyframes imageThemePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 20px rgba(255, 107, 107, 0.6),
+      0 0 40px rgba(255, 107, 107, 0.3),
+      inset 0 0 20px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 
+      0 0 30px rgba(255, 107, 107, 0.8),
+      0 0 60px rgba(255, 107, 107, 0.5),
+      inset 0 0 30px rgba(255, 255, 255, 0.3);
+  }
 }
 
 /* 各主题的渐变效果 */
@@ -382,7 +417,55 @@ h1 {
 }
 
 .image-theme {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(45deg, 
+    #ff6b6b 0%, 
+    #4ecdc4 20%, 
+    #45b7d1 40%, 
+    #96ceb4 60%, 
+    #feca57 80%, 
+    #ff9ff3 100%);
+  background-size: 200% 200%;
+  animation: rainbowShift 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 彩虹渐变动画 */
+@keyframes rainbowShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 为图片主题添加特殊的光泽效果 */
+.image-theme::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.3) 50%, 
+    transparent 70%);
+  animation: shimmer 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
 }
 
 .red-theme {
