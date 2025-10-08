@@ -52,28 +52,23 @@
             </div>
         </div>
         
-        <!-- 歌单选择 -->
-        <div class="playlist-selector">
-            <label for="folder-select">选择歌单：</label>
-            <select id="folder-select"></select>
-        </div>
-        
-        <!-- 歌曲列表 -->
+        <!-- 歌单选择和歌曲列表 -->
         <div class="playlist">
-            <h2>当前歌单：<span id="current-folder"></span></h2>
+            <div class="playlist-header">
+                <label for="folder-select">选择歌单：</label>
+                <select id="folder-select"></select>
+            </div>
             <ul id="song-list"></ul>
-        </div>
-        
-        <!-- 分页 -->
-        <div id="pagination" class="pagination"></div>
-        
-        <!-- 播放信息 -->
-        <div id="now-playing">
-            正在播放：<span id="now-playing-title">无</span>
+            <!-- 分页 -->
+            <div id="pagination" class="pagination"></div>
         </div>
         
         <!-- 播放控制 -->
         <div class="controls">
+            <div class="now-playing-info">
+                <span class="now-playing-label">正在播放：</span>
+                <span id="now-playing-title">无</span>
+            </div>
             <audio id="audio-player" controls></audio>
             <div class="playback-options">
                 <button id="btn-loop"><i class="fa fa-repeat"></i> 单曲循环</button>

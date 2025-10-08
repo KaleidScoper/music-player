@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const folderSelect = document.getElementById("folder-select");
     const songList = document.getElementById("song-list");
     const audioPlayer = document.getElementById("audio-player");
-    const currentFolder = document.getElementById("current-folder");
     const nowPlayingTitle = document.getElementById("now-playing-title");
     const pagination = document.getElementById("pagination");
     const lyricsDisplay = document.getElementById("lyrics-display");
@@ -176,14 +175,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.error) {
                     console.error('获取歌曲列表失败:', data.error);
                     songs = [];
-                    currentFolder.textContent = folder + ' (加载失败)';
                 } else {
                     songs = data.map(song => ({
                         name: song,
                         folder: folder,
                         fullPath: `${folder}/${song}`
                     }));
-                    currentFolder.textContent = folder;
                 }
                 
                 currentPage = 1;
@@ -194,7 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(error => {
                 console.error('加载歌曲失败:', error);
                 songs = [];
-                currentFolder.textContent = folder + ' (加载失败)';
                 renderSongList();
                 renderPagination();
                 clearLyrics();

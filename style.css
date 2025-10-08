@@ -439,17 +439,12 @@ input:checked + .slider:before {
   box-shadow: 0 4px 12px var(--shadow-color);
 }
 
-/* 歌单选择器样式 */
-.playlist-selector {
-  margin-bottom: 25px;
-  background: var(--card-bg);
-  padding: 20px;
-  border-radius: 15px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+/* 歌单头部样式 */
+.playlist-header {
+  margin-bottom: 15px;
 }
 
-.playlist-selector label {
+.playlist-header label {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
@@ -482,18 +477,10 @@ input:checked + .slider:before {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.playlist h2 {
-  color: var(--text-color);
-  font-size: 18px;
-  margin-bottom: 15px;
-  font-weight: 600;
-}
 
 #song-list {
   list-style: none;
   padding: 0;
-  max-height: 300px;
-  overflow-y: auto;
   border-radius: 10px;
   background: var(--container-bg);
   border: 1px solid var(--border-color);
@@ -528,6 +515,23 @@ input:checked + .slider:before {
   border-radius: 15px;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 正在播放信息样式 */
+.now-playing-info {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.now-playing-label {
+  font-weight: 600;
+  color: var(--text-color);
+  margin-right: 8px;
+}
+
+#now-playing-title {
+  color: var(--primary-color);
+  font-weight: bold;
 }
 
 #audio-player {
@@ -567,24 +571,9 @@ input:checked + .slider:before {
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
-#now-playing {
-  margin: 25px 0;
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--text-color);
-  padding: 15px;
-  background: var(--container-bg);
-  border-radius: 10px;
-  border-left: 4px solid var(--primary-color);
-}
-
-#now-playing-title {
-  color: var(--primary-color);
-  font-weight: bold;
-}
 
 .pagination {
-  margin: 20px 0;
+  margin-top: 15px;
   display: flex;
   justify-content: center;
   gap: 8px;
