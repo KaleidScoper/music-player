@@ -32,31 +32,21 @@
                 </div>
             </div>
             
-            <!-- 自选歌单播放设置 -->
-            <div class="settings-card">
-                <h3><i class="fa fa-list"></i> 自选歌单播放</h3>
-                <div class="playlist-selection-settings">
-                    <div class="setting-header">
-                        <span>启用自选歌单播放</span>
-                        <label class="switch">
-                            <input type="checkbox" id="cross-playlist-toggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div id="playlist-selection" class="playlist-selection" style="display: none;">
-                        <p>选择要包含的歌单：</p>
-                        <div id="playlist-checkboxes" class="playlist-checkboxes"></div>
-                        <button id="apply-cross-playlist" class="apply-btn">应用设置</button>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <!-- 歌单选择和歌曲列表 -->
         <div class="playlist">
             <div class="playlist-header">
-                <label for="folder-select">选择歌单：</label>
-                <select id="folder-select"></select>
+                <label>选择歌单：</label>
+                <div class="playlist-dropdown-container">
+                    <button id="playlist-dropdown-btn" class="playlist-dropdown-btn">
+                        <span id="playlist-dropdown-text">选择歌单</span>
+                        <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div id="playlist-dropdown-menu" class="playlist-dropdown-menu">
+                        <div id="playlist-checkboxes" class="playlist-checkboxes"></div>
+                    </div>
+                </div>
             </div>
             <ul id="song-list"></ul>
             <!-- 分页 -->

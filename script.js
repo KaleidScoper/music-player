@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const folderSelect = document.getElementById("folder-select");
     const songList = document.getElementById("song-list");
     const audioPlayer = document.getElementById("audio-player");
     const nowPlayingTitle = document.getElementById("now-playing-title");
@@ -7,11 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const lyricsDisplay = document.getElementById("lyrics-display");
     const themeSelect = document.getElementById("theme-select");
     const lyricsContainer = document.getElementById("lyrics-container");
-    const crossPlaylistToggle = document.getElementById("cross-playlist-toggle");
-    const playlistSelection = document.getElementById("playlist-selection");
     const playlistCheckboxes = document.getElementById("playlist-checkboxes");
-    const applyCrossPlaylistBtn = document.getElementById("apply-cross-playlist");
     const toggleTranslationCheckbox = document.getElementById("toggle-translation");
+    const playlistDropdownBtn = document.getElementById("playlist-dropdown-btn");
+    const playlistDropdownMenu = document.getElementById("playlist-dropdown-menu");
+    const playlistDropdownText = document.getElementById("playlist-dropdown-text");
 
     let songs = [];
     let allSongs = []; // 存储所有歌单的歌曲
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let prevLineEl = null;
     let currentLineEl = null;
     let nextLineEl = null;
-    let crossPlaylistEnabled = false;
     let selectedPlaylists = [];
     let allFolders = [];
 
@@ -44,21 +42,61 @@ document.addEventListener("DOMContentLoaded", () => {
         setTheme(this.value);
     });
 
-    // 自选歌单播放功能
-    crossPlaylistToggle.addEventListener("change", function() {
-        crossPlaylistEnabled = this.checked;
-        playlistSelection.style.display = crossPlaylistEnabled ? 'block' : 'none';
-        
-        if (crossPlaylistEnabled) {
-            loadAllSongs();
+    // 下拉菜单控制
+    function toggleDropdown() {
+        const isOpen = playlistDropdownMenu.classList.contains('show');
+        if (isOpen) {
+            closeDropdown();
         } else {
-            // 恢复到单歌单模式
-            songs = allSongs.filter(song => song.folder === folderSelect.value);
-            currentPage = 1;
-            renderSongList();
-            renderPagination();
+            openDropdown();
         }
-    });
+    }
+
+    function openDropdown() {
+        playlistDropdownMenu.classList.add('show');
+        playlistDropdownBtn.classList.add('open');
+    }
+
+    function closeDropdown() {
+        playlistDropdownMenu.classList.remove('show');
+        playlistDropdownBtn.classList.remove('open');
+    }
+
+    // 更新下拉按钮文本
+    function updateDropdownText() {
+        const checkedBoxes = playlistCheckboxes.querySelectorAll('input[type="checkbox"]:checked');
+        const count = checkedBoxes.length;
+        
+        if (count === 0) {
+            playlistDropdownText.textContent = '选择歌单';
+        } else if (count === 1) {
+            playlistDropdownText.textContent = checkedBoxes[0].nextElementSibling.textContent;
+        } else {
+            playlistDropdownText.textContent = `已选择 ${count} 个歌单`;
+        }
+    }
+
+    // 统一的歌单选择功能
+    function updatePlaylistSelection() {
+        const checkedBoxes = playlistCheckboxes.querySelectorAll('input[type="checkbox"]:checked');
+        selectedPlaylists = Array.from(checkedBoxes).map(checkbox => checkbox.value);
+        
+        if (selectedPlaylists.length === 0) {
+            songs = [];
+        } else if (selectedPlaylists.length === 1) {
+            // 单歌单模式
+            songs = allSongs.filter(song => song.folder === selectedPlaylists[0]);
+        } else {
+            // 多歌单模式
+            songs = allSongs.filter(song => selectedPlaylists.includes(song.folder));
+        }
+        
+        updateDropdownText();
+        currentPage = 1;
+        renderSongList();
+        renderPagination();
+        clearLyrics();
+    }
 
     // 加载所有歌单的歌曲
     function loadAllSongs() {
@@ -101,35 +139,61 @@ document.addEventListener("DOMContentLoaded", () => {
             checkbox.id = `playlist-${folder}`;
             checkbox.value = folder;
             checkbox.checked = selectedPlaylists.includes(folder);
+            checkbox.addEventListener('change', updatePlaylistSelection);
             
-            const label = document.createElement('label');
-            label.htmlFor = `playlist-${folder}`;
+            // 为选中的歌单项添加选中样式
+            if (selectedPlaylists.includes(folder)) {
+                checkboxDiv.classList.add('selected');
+            }
+            
+            const label = document.createElement('span');
             label.textContent = folder;
+            
+            // 为整个歌单项添加点击事件，点击任何地方都能切换复选框状态
+            checkboxDiv.addEventListener('click', (e) => {
+                // 阻止事件冒泡，避免触发下拉菜单的关闭
+                e.stopPropagation();
+                
+                // 切换复选框状态
+                checkbox.checked = !checkbox.checked;
+                
+                // 更新选中样式
+                if (checkbox.checked) {
+                    checkboxDiv.classList.add('selected');
+                } else {
+                    checkboxDiv.classList.remove('selected');
+                }
+                
+                // 手动触发change事件
+                checkbox.dispatchEvent(new Event('change'));
+            });
             
             checkboxDiv.appendChild(checkbox);
             checkboxDiv.appendChild(label);
             playlistCheckboxes.appendChild(checkboxDiv);
         });
+        
+        updateDropdownText();
     }
 
-    // 应用自选歌单播放设置
-    applyCrossPlaylistBtn.addEventListener("click", function() {
-        selectedPlaylists = [];
-        const checkboxes = playlistCheckboxes.querySelectorAll('input[type="checkbox"]:checked');
-        checkboxes.forEach(checkbox => {
-            selectedPlaylists.push(checkbox.value);
-        });
+    // 添加下拉菜单事件监听器
+    playlistDropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleDropdown();
+    });
 
-        if (selectedPlaylists.length > 0) {
-            songs = allSongs.filter(song => selectedPlaylists.includes(song.folder));
-            currentPage = 1;
-            renderSongList();
-            renderPagination();
-            console.log(`自选歌单播放已启用，包含 ${selectedPlaylists.length} 个歌单，共 ${songs.length} 首歌曲`);
-        } else {
-            alert('请至少选择一个歌单！');
+    // 点击外部区域关闭下拉菜单
+    document.addEventListener('click', (e) => {
+        if (!playlistDropdownBtn.contains(e.target) && !playlistDropdownMenu.contains(e.target)) {
+            closeDropdown();
         }
     });
+
+    // 阻止下拉菜单内部点击事件冒泡
+    playlistDropdownMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
 
     // 加载文件夹和文件
     fetch("backend.php?action=getFolders")
@@ -143,66 +207,29 @@ document.addEventListener("DOMContentLoaded", () => {
             
             allFolders = folders;
             
-            folders.forEach(folder => {
-                const option = document.createElement("option");
-                option.value = folder;
-                option.textContent = folder;
-                folderSelect.appendChild(option);
-            });
             
             if (folders.length > 0) {
-                loadSongs(folders[0]);
-                loadAllSongs(); // 预加载所有歌单
+                loadAllSongs(); // 加载所有歌单
+                // 默认选择第一个歌单
+                selectedPlaylists = [folders[0]];
+                updatePlaylistSelection();
             }
         })
         .catch(error => {
             console.error('加载文件夹失败:', error);
         });
 
-    folderSelect.addEventListener("change", () => {
-        if (!crossPlaylistEnabled) {
-            loadSongs(folderSelect.value);
-        }
-    });
-
-    function loadSongs(folder) {
-        console.log('正在加载歌单:', folder);
-        fetch(`backend.php?action=getSongs&folder=${encodeURIComponent(folder)}`)
-            .then(res => res.json())
-            .then(data => {
-                console.log('获取到的歌曲:', data);
-                
-                if (data.error) {
-                    console.error('获取歌曲列表失败:', data.error);
-                    songs = [];
-                } else {
-                    songs = data.map(song => ({
-                        name: song,
-                        folder: folder,
-                        fullPath: `${folder}/${song}`
-                    }));
-                }
-                
-                currentPage = 1;
-                renderSongList();
-                renderPagination();
-                clearLyrics();
-            })
-            .catch(error => {
-                console.error('加载歌曲失败:', error);
-                songs = [];
-                renderSongList();
-                renderPagination();
-                clearLyrics();
-            });
-    }
 
     function renderSongList() {
         songList.innerHTML = "";
         
         if (songs.length === 0) {
             const li = document.createElement("li");
-            li.textContent = "暂无歌曲或加载失败";
+            if (selectedPlaylists.length === 0) {
+                li.textContent = "请先选择歌单以显示歌曲列表";
+            } else {
+                li.textContent = "所选歌单中暂无歌曲，请检查歌单或添加音乐文件";
+            }
             li.style.textAlign = "center";
             li.style.color = "#666";
             li.style.fontStyle = "italic";
@@ -218,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const song = songs[i];
             
             // 显示歌曲名称和所属歌单
-            if (crossPlaylistEnabled) {
+            if (selectedPlaylists.length > 1) {
                 li.textContent = `${song.name} (${song.folder})`;
             } else {
                 li.textContent = song.name;
@@ -491,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error('播放失败:', error);
         });
         
-        nowPlayingTitle.textContent = crossPlaylistEnabled ? 
+        nowPlayingTitle.textContent = selectedPlaylists.length > 1 ? 
             `${songName} (${folder})` : songName;
         
         loadLyrics(songName, folder);
