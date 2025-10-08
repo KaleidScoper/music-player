@@ -81,20 +81,20 @@
 }
 
 [data-theme="image"] {
-  --primary-color: #667eea;
-  --secondary-color: #764ba2;
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
   --accent-color: #28a745;
-  --text-color: #333;
-  --bg-color: rgba(255, 255, 255, 0.95);
-  --container-bg: rgba(255, 255, 255, 0.9);
-  --border-color: #e1e5e9;
-  --hover-color: rgba(102, 126, 234, 0.1);
-  --active-color: rgba(102, 126, 234, 0.2);
-  --shadow-color: rgba(102, 126, 234, 0.3);
+  --text-color: #212529;
+  --bg-color: rgba(255, 255, 255, 0.98);
+  --container-bg: rgba(248, 249, 250, 0.95);
+  --border-color: #dee2e6;
+  --hover-color: rgba(0, 123, 255, 0.1);
+  --active-color: rgba(0, 123, 255, 0.2);
+  --shadow-color: rgba(0, 123, 255, 0.3);
   --body-bg: url('background.jpg');
   --card-bg: rgba(255, 255, 255, 0.95);
   --input-bg: #ffffff;
-  --text-muted: #666;
+  --text-muted: #6c757d;
   --success-color: #28a745;
   --warning-color: #ffc107;
   --danger-color: #dc3545;
@@ -213,6 +213,19 @@ body {
   background-repeat: no-repeat;
   background-attachment: fixed;
   transition: all 0.3s ease;
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* 页面加载动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 为图片主题添加遮罩层 */
@@ -238,6 +251,20 @@ body[data-theme="image"]::before {
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
+  animation: slideInUp 0.6s ease-out 0.2s both;
+  will-change: transform, opacity;
+}
+
+/* 容器进入动画 */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .player-container::before {
@@ -258,6 +285,20 @@ h1 {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: bold;
+  animation: titleGlow 0.8s ease-out 0.4s both;
+  will-change: transform, opacity;
+}
+
+/* 标题发光动画 */
+@keyframes titleGlow {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* 设置面板样式 */
@@ -425,17 +466,18 @@ h1 {
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
+  transform: translateY(-10px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-height: 300px;
   overflow-y: auto;
   margin-top: 4px;
+  will-change: transform, opacity;
 }
 
 .playlist-dropdown-menu.show {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 /* 歌单复选框样式 */
@@ -454,11 +496,25 @@ h1 {
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 14px;
   color: var(--text-color);
   margin: 2px 0;
   user-select: none; /* 防止文本被选中 */
+  will-change: transform, background-color;
+  animation: fadeInUp 0.3s ease-out both;
+}
+
+/* 复选框进入动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .playlist-checkbox:hover {
@@ -514,6 +570,20 @@ h1 {
   border-radius: 15px;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  animation: fadeInScale 0.5s ease-out 0.6s both;
+  will-change: transform, opacity;
+}
+
+/* 卡片进入动画 */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 
@@ -529,12 +599,38 @@ h1 {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
   position: relative;
   color: var(--text-color);
   font-size: 14px;
+  will-change: transform, background-color;
+  animation: slideInLeft 0.4s ease-out both;
 }
+
+/* 歌曲列表项进入动画 */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 为每个列表项添加延迟动画 */
+#song-list li:nth-child(1) { animation-delay: 0.1s; }
+#song-list li:nth-child(2) { animation-delay: 0.15s; }
+#song-list li:nth-child(3) { animation-delay: 0.2s; }
+#song-list li:nth-child(4) { animation-delay: 0.25s; }
+#song-list li:nth-child(5) { animation-delay: 0.3s; }
+#song-list li:nth-child(6) { animation-delay: 0.35s; }
+#song-list li:nth-child(7) { animation-delay: 0.4s; }
+#song-list li:nth-child(8) { animation-delay: 0.45s; }
+#song-list li:nth-child(9) { animation-delay: 0.5s; }
+#song-list li:nth-child(10) { animation-delay: 0.55s; }
 
 #song-list li:hover {
   background: var(--hover-color);
@@ -554,6 +650,8 @@ h1 {
   border-radius: 15px;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  animation: fadeInScale 0.5s ease-out 0.8s both;
+  will-change: transform, opacity;
 }
 
 /* 正在播放信息样式 */
@@ -595,9 +693,31 @@ h1 {
   color: #fff;
   border-radius: 25px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px var(--shadow-color);
   font-weight: 500;
+  will-change: transform, box-shadow;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 按钮波纹效果 */
+.playback-options button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.playback-options button:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 .playback-options button:hover {
@@ -627,8 +747,10 @@ h1 {
   color: white;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px var(--shadow-color);
+  will-change: transform, box-shadow;
+  animation: fadeInScale 0.3s ease-out both;
 }
 
 .pagination button:hover {
@@ -651,6 +773,8 @@ h1 {
   overflow: hidden;
   position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  animation: fadeInScale 0.5s ease-out 1s both;
+  will-change: transform, opacity;
 }
 
 .lyrics-display {
@@ -669,9 +793,10 @@ h1 {
 .lyrics-line {
   padding: 2px 6px;
   border-radius: 6px;
-  transition: none; /* 取消动画 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--text-color);
   white-space: pre-wrap;
+  will-change: opacity, transform;
 }
 .lyric-prev {
   opacity: 0.45;
@@ -702,6 +827,29 @@ h1 {
 /* 隐藏滚动条（多浏览器） */
 .lyrics-container::-webkit-scrollbar { width: 0; height: 0; }
 .lyrics-container { scrollbar-width: none; }
+
+/* 性能优化：启用硬件加速 */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 减少重绘和重排 */
+.player-container,
+.playlist,
+.controls,
+.lyrics-container {
+  contain: layout style paint;
+}
+
+/* 优化动画性能 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* 歌词头部（翻译开关） */
 .lyrics-header {
