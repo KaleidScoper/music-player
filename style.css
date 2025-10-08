@@ -284,32 +284,88 @@ h1 {
 }
 
 /* 配色选择器样式 */
-.theme-selector {
-  margin-bottom: 15px;
+.theme-selector-inline {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0 25px 0;
 }
 
-.theme-selector label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: var(--text-color);
+.theme-colors {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-#theme-select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--input-bg);
-  color: var(--text-color);
-  font-size: 14px;
+.theme-color {
+  cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
 }
 
-#theme-select:focus {
-  outline: none;
+.theme-color:hover {
+  transform: scale(1.1);
+}
+
+.theme-color.selected {
+  transform: scale(1.15);
+}
+
+.color-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-color:hover .color-circle {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.theme-color.selected .color-circle {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* 各主题的渐变效果 */
+.dark-theme {
+  background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+}
+
+.light-theme {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.image-theme {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.red-theme {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.orange-theme {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.green-theme {
+  background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+}
+
+.cyan-theme {
+  background: linear-gradient(135deg, #00cec9 0%, #74b9ff 100%);
+}
+
+.default-theme {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.purple-theme {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
 }
 
 /* 歌单下拉菜单容器 */

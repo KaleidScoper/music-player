@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nowPlayingTitle = document.getElementById("now-playing-title");
     const pagination = document.getElementById("pagination");
     const lyricsDisplay = document.getElementById("lyrics-display");
-    const themeSelect = document.getElementById("theme-select");
+    const themeColors = document.querySelectorAll(".theme-color");
     const lyricsContainer = document.getElementById("lyrics-container");
     const playlistCheckboxes = document.getElementById("playlist-checkboxes");
     const toggleTranslationCheckbox = document.getElementById("toggle-translation");
@@ -33,14 +33,31 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem('selectedTheme', theme);
     }
 
-    // 加载保存的配色方案，默认为暗色主题
-    const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
+    // 加载保存的配色方案，默认为图片主题
+    const savedTheme = localStorage.getItem('selectedTheme') || 'image';
     setTheme(savedTheme);
-    themeSelect.value = savedTheme;
-
-    themeSelect.addEventListener("change", function() {
-        setTheme(this.value);
-    });
+    
+    // 初始化主题选择器
+    function initThemeSelector() {
+        themeColors.forEach(colorElement => {
+            const theme = colorElement.getAttribute('data-theme');
+            if (theme === savedTheme) {
+                colorElement.classList.add('selected');
+            }
+            
+            colorElement.addEventListener('click', function() {
+                // 移除所有选中状态
+                themeColors.forEach(el => el.classList.remove('selected'));
+                // 添加当前选中状态
+                this.classList.add('selected');
+                // 应用主题
+                setTheme(theme);
+            });
+        });
+    }
+    
+    // 初始化主题选择器
+    initThemeSelector();
 
     // 下拉菜单控制
     function toggleDropdown() {
@@ -123,6 +140,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Promise.all(promises).then(results => {
             allSongs = results.flat();
             updatePlaylistCheckboxes();
+            // 确保在加载完歌曲后更新选择状态
+            updatePlaylistSelection();
         });
     }
 
@@ -209,10 +228,9 @@ document.addEventListener("DOMContentLoaded", () => {
             
             
             if (folders.length > 0) {
-                loadAllSongs(); // 加载所有歌单
                 // 默认选择第一个歌单
                 selectedPlaylists = [folders[0]];
-                updatePlaylistSelection();
+                loadAllSongs(); // 加载所有歌单
             }
         })
         .catch(error => {

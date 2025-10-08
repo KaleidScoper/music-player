@@ -11,27 +11,37 @@
     <div class="player-container">
         <h1>🎵 在线溜冰音乐播放器 🎵</h1>
         
-        <!-- 设置面板 -->
-        <div class="settings-panel">
-            <!-- 配色方案设置 -->
-            <div class="settings-card">
-                <h3><i class="fa fa-palette"></i> 配色方案</h3>
-                <div class="theme-selector">
-                    <label for="theme-select">选择主题：</label>
-                    <select id="theme-select">
-                        <option value="dark">暗色主题（默认）</option>
-                        <option value="light">浅色主题</option>
-                        <option value="image">使用图片</option>
-                        <option value="red">红色热情</option>
-                        <option value="orange">橙暖阳光</option>
-                        <option value="green">绿意盎然</option>
-                        <option value="cyan">青蓝清新</option>
-                        <option value="default">蓝紫渐变</option>
-                        <option value="purple">紫色梦幻</option>
-                    </select>
+        <!-- 配色方案选择器 -->
+        <div class="theme-selector-inline">
+            <div class="theme-colors">
+                <div class="theme-color" data-theme="dark" title="暗色主题">
+                    <div class="color-circle dark-theme"></div>
+                </div>
+                <div class="theme-color" data-theme="light" title="浅色主题">
+                    <div class="color-circle light-theme"></div>
+                </div>
+                <div class="theme-color" data-theme="image" title="使用图片">
+                    <div class="color-circle image-theme"></div>
+                </div>
+                <div class="theme-color" data-theme="red" title="红色热情">
+                    <div class="color-circle red-theme"></div>
+                </div>
+                <div class="theme-color" data-theme="orange" title="橙暖阳光">
+                    <div class="color-circle orange-theme"></div>
+                </div>
+                <div class="theme-color" data-theme="green" title="绿意盎然">
+                    <div class="color-circle green-theme"></div>
+                </div>
+                <div class="theme-color" data-theme="cyan" title="青蓝清新">
+                    <div class="color-circle cyan-theme"></div>
+                </div>
+                <div class="theme-color" data-theme="default" title="蓝紫渐变">
+                    <div class="color-circle default-theme"></div>
+                </div>
+                <div class="theme-color" data-theme="purple" title="紫色梦幻">
+                    <div class="color-circle purple-theme"></div>
                 </div>
             </div>
-            
         </div>
         
         <!-- 歌单选择和歌曲列表 -->
