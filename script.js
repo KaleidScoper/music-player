@@ -26,6 +26,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let nextLineEl = null;
     let selectedPlaylists = [];
     let allFolders = [];
+    
+    // 性能优化相关变量
+    let songsCache = new Map(); // 歌单歌曲缓存
+    let loadingStates = new Map(); // 加载状态跟踪
+    let virtualScrollEnabled = false; // 虚拟滚动开关
+    const CACHE_SIZE_LIMIT = 1000; // 缓存大小限制
+    const BATCH_SIZE = 50; // 批处理大小
 
     // 配色方案功能
     function setTheme(theme) {
@@ -93,10 +100,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 统一的歌单选择功能
-    function updatePlaylistSelection() {
+    // 优化的歌单选择功能
+    async function updatePlaylistSelection() {
         const checkedBoxes = playlistCheckboxes.querySelectorAll('input[type="checkbox"]:checked');
         selectedPlaylists = Array.from(checkedBoxes).map(checkbox => checkbox.value);
+        
+        // 显示加载状态
+        if (selectedPlaylists.length > 0) {
+            showLoadingState();
+        }
+        
+        // 异步加载选中的歌单
+        await loadSelectedPlaylists();
         
         if (selectedPlaylists.length === 0) {
             songs = [];
@@ -113,36 +128,109 @@ document.addEventListener("DOMContentLoaded", () => {
         renderSongList();
         renderPagination();
         clearLyrics();
+        hideLoadingState();
+    }
+    
+    // 显示加载状态
+    function showLoadingState() {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'loading-indicator';
+        loadingDiv.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+                <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid var(--primary-color); border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <div style="margin-top: 10px;">正在加载歌曲...</div>
+            </div>
+        `;
+        songList.appendChild(loadingDiv);
+    }
+    
+    // 隐藏加载状态
+    function hideLoadingState() {
+        const loadingDiv = document.getElementById('loading-indicator');
+        if (loadingDiv) {
+            loadingDiv.remove();
+        }
     }
 
-    // 加载所有歌单的歌曲
-    function loadAllSongs() {
-        allSongs = [];
-        const promises = allFolders.map(folder => 
-            fetch(`backend.php?action=getSongs&folder=${encodeURIComponent(folder)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.error) {
-                        return data.map(song => ({
-                            name: song,
-                            folder: folder,
-                            fullPath: `${folder}/${song}`
-                        }));
+    // 优化的歌曲加载函数 - 按需加载
+    async function loadSongsForPlaylist(folder) {
+        // 检查缓存
+        if (songsCache.has(folder)) {
+            return songsCache.get(folder);
+        }
+        
+        // 检查是否正在加载
+        if (loadingStates.get(folder)) {
+            return new Promise((resolve) => {
+                const checkLoading = () => {
+                    if (!loadingStates.get(folder)) {
+                        resolve(songsCache.get(folder) || []);
+                    } else {
+                        setTimeout(checkLoading, 100);
                     }
-                    return [];
-                })
-                .catch(error => {
-                    console.error(`加载歌单 ${folder} 失败:`, error);
-                    return [];
-                })
-        );
-
-        Promise.all(promises).then(results => {
-            allSongs = results.flat();
-            updatePlaylistCheckboxes();
-            // 确保在加载完歌曲后更新选择状态
-            updatePlaylistSelection();
-        });
+                };
+                checkLoading();
+            });
+        }
+        
+        // 设置加载状态
+        loadingStates.set(folder, true);
+        
+        try {
+            const response = await fetch(`backend.php?action=getSongs&folder=${encodeURIComponent(folder)}`);
+            const data = await response.json();
+            
+            let songs = [];
+            if (!data.error) {
+                songs = data.map(song => ({
+                    name: song,
+                    folder: folder,
+                    fullPath: `${folder}/${song}`
+                }));
+            }
+            
+            // 缓存结果
+            songsCache.set(folder, songs);
+            
+            // 清理缓存（如果超过限制）
+            if (songsCache.size > CACHE_SIZE_LIMIT) {
+                const firstKey = songsCache.keys().next().value;
+                songsCache.delete(firstKey);
+            }
+            
+            return songs;
+        } catch (error) {
+            console.error(`加载歌单 ${folder} 失败:`, error);
+            return [];
+        } finally {
+            loadingStates.set(folder, false);
+        }
+    }
+    
+    // 批量加载选中的歌单
+    async function loadSelectedPlaylists() {
+        if (selectedPlaylists.length === 0) {
+            allSongs = [];
+            return;
+        }
+        
+        // 只加载选中的歌单
+        const promises = selectedPlaylists.map(folder => loadSongsForPlaylist(folder));
+        const results = await Promise.all(promises);
+        allSongs = results.flat();
+    }
+    
+    // 延迟加载所有歌单（仅用于初始化）
+    async function loadAllSongsLazy() {
+        // 只加载第一个歌单，其他按需加载
+        if (allFolders.length > 0) {
+            const firstFolder = allFolders[0];
+            const firstSongs = await loadSongsForPlaylist(firstFolder);
+            allSongs = firstSongs;
+        }
+        
+        updatePlaylistCheckboxes();
+        updatePlaylistSelection();
     }
 
     // 更新歌单选择复选框
@@ -230,7 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (folders.length > 0) {
                 // 默认选择第一个歌单
                 selectedPlaylists = [folders[0]];
-                loadAllSongs(); // 加载所有歌单
+                loadAllSongsLazy(); // 延迟加载，只加载第一个歌单
             }
         })
         .catch(error => {
@@ -238,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
 
+    // 优化的歌曲列表渲染 - 支持虚拟滚动
     function renderSongList() {
         songList.innerHTML = "";
         
@@ -255,28 +344,70 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         
+        // 如果歌曲数量很大，启用虚拟滚动
+        if (songs.length > 100 && virtualScrollEnabled) {
+            renderVirtualSongList();
+        } else {
+            renderNormalSongList();
+        }
+    }
+    
+    // 普通渲染模式
+    function renderNormalSongList() {
         const startIndex = (currentPage - 1) * songsPerPage;
         const endIndex = Math.min(startIndex + songsPerPage, songs.length);
 
         for (let i = startIndex; i < endIndex; i++) {
-            const li = document.createElement("li");
-            const song = songs[i];
-            
-            // 显示歌曲名称和所属歌单
-            if (selectedPlaylists.length > 1) {
-                li.textContent = `${song.name} (${song.folder})`;
-            } else {
-                li.textContent = song.name;
-            }
-            
-            li.addEventListener("click", () => playSong(i));
-            
-            if (i === currentIndex) {
-                li.classList.add("playing");
-            }
-            
+            const li = createSongListItem(i);
             songList.appendChild(li);
         }
+    }
+    
+    // 虚拟滚动渲染模式
+    function renderVirtualSongList() {
+        const containerHeight = songList.offsetHeight || 300;
+        const itemHeight = 50; // 每个列表项的高度
+        const visibleItems = Math.ceil(containerHeight / itemHeight) + 2; // 多渲染2个作为缓冲
+        
+        const startIndex = Math.max(0, currentIndex - Math.floor(visibleItems / 2));
+        const endIndex = Math.min(songs.length, startIndex + visibleItems);
+        
+        // 创建占位符
+        const topSpacer = document.createElement('div');
+        topSpacer.style.height = `${startIndex * itemHeight}px`;
+        songList.appendChild(topSpacer);
+        
+        // 渲染可见项目
+        for (let i = startIndex; i < endIndex; i++) {
+            const li = createSongListItem(i);
+            songList.appendChild(li);
+        }
+        
+        // 创建底部占位符
+        const bottomSpacer = document.createElement('div');
+        bottomSpacer.style.height = `${(songs.length - endIndex) * itemHeight}px`;
+        songList.appendChild(bottomSpacer);
+    }
+    
+    // 创建歌曲列表项
+    function createSongListItem(index) {
+        const li = document.createElement("li");
+        const song = songs[index];
+        
+        // 显示歌曲名称和所属歌单
+        if (selectedPlaylists.length > 1) {
+            li.textContent = `${song.name} (${song.folder})`;
+        } else {
+            li.textContent = song.name;
+        }
+        
+        li.addEventListener("click", () => playSong(index));
+        
+        if (index === currentIndex) {
+            li.classList.add("playing");
+        }
+        
+        return li;
     }
 
     function renderPagination() {
@@ -636,4 +767,52 @@ document.addEventListener("DOMContentLoaded", () => {
             .replaceAll('"', '&quot;')
             .replaceAll("'", '&#39;');
     }
+    
+    // 性能监控和自动优化
+    function initPerformanceOptimization() {
+        // 监控内存使用
+        if ('memory' in performance) {
+            setInterval(() => {
+                const memory = performance.memory;
+                const usedMB = Math.round(memory.usedJSHeapSize / 1048576);
+                const totalMB = Math.round(memory.totalJSHeapSize / 1048576);
+                
+                // 如果内存使用超过50MB，启用虚拟滚动
+                if (usedMB > 50 && !virtualScrollEnabled) {
+                    virtualScrollEnabled = true;
+                    console.log('启用虚拟滚动以优化性能');
+                    renderSongList();
+                }
+                
+                // 如果内存使用超过100MB，清理缓存
+                if (usedMB > 100) {
+                    clearOldCache();
+                }
+            }, 5000);
+        }
+        
+        // 监控DOM节点数量
+        const observer = new MutationObserver(() => {
+            const nodeCount = document.querySelectorAll('li').length;
+            if (nodeCount > 200 && !virtualScrollEnabled) {
+                virtualScrollEnabled = true;
+                console.log('DOM节点过多，启用虚拟滚动');
+                renderSongList();
+            }
+        });
+        
+        observer.observe(songList, { childList: true });
+    }
+    
+    // 清理旧缓存
+    function clearOldCache() {
+        if (songsCache.size > CACHE_SIZE_LIMIT / 2) {
+            const keysToDelete = Array.from(songsCache.keys()).slice(0, Math.floor(songsCache.size / 2));
+            keysToDelete.forEach(key => songsCache.delete(key));
+            console.log('清理了旧缓存以释放内存');
+        }
+    }
+    
+    // 初始化性能优化
+    initPerformanceOptimization();
 }); 
