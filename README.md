@@ -11,6 +11,7 @@
 脚本为[bilibili-video2mp3](https://github.com/wxsms/bilibili-video2mp3)设计。
 
 ### 环境要求
+不论您尝试在哪运行这个脚本（部署此播放器的服务器，或本地开发环境），都应该确保安装了以下的依赖。
 - Python 3.6+（运行环境）
 - Node.js（下载工具运行环境）
 - FFmpeg（下载工具格式转换）
