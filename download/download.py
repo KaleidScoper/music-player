@@ -9,7 +9,8 @@ import subprocess
 import sys
 import os
 import re
-from typing import List
+import glob
+from typing import List, Optional
 
 def check_command_exists(command: str) -> bool:
     """检查命令是否存在"""
@@ -150,6 +151,106 @@ def collect_urls() -> List[str]:
     
     return urls
 
+def get_music_directories() -> List[str]:
+    """获取现有的歌单目录列表"""
+    music_dir = "../music"
+    if not os.path.exists(music_dir):
+        return []
+    
+    directories = []
+    for item in os.listdir(music_dir):
+        item_path = os.path.join(music_dir, item)
+        if os.path.isdir(item_path):
+            directories.append(item)
+    
+    return sorted(directories)
+
+def select_save_directory() -> str:
+    """让用户选择保存目录"""
+    print("\n=== 选择保存目录 ===")
+    print("请选择音频文件的保存位置：")
+    print()
+    
+    # 获取现有歌单目录
+    existing_dirs = get_music_directories()
+    
+    options = []
+    print("1. 保存到 download 目录（当前目录）")
+    options.append("download")
+    
+    if existing_dirs:
+        print(f"\n2-{len(existing_dirs)+1}. 保存到现有歌单目录：")
+        for i, dir_name in enumerate(existing_dirs, 2):
+            print(f"   {i}. {dir_name}")
+            options.append(f"../music/{dir_name}")
+    
+    print(f"\n{len(options)+1}. 创建新歌单目录")
+    options.append("new")
+    
+    while True:
+        try:
+            max_choice = len(existing_dirs) + 2  # 1个download + 现有歌单数量 + 1个新建
+            choice = input(f"\n请选择 (1-{max_choice}): ").strip()
+            
+            if not choice.isdigit():
+                print("请输入数字")
+                continue
+            
+            choice_num = int(choice)
+            
+            if choice_num == 1:
+                return "download"
+            elif 2 <= choice_num <= len(existing_dirs) + 1:
+                return options[choice_num - 1]
+            elif choice_num == max_choice:
+                return create_new_playlist_directory()
+            else:
+                print(f"请输入 1 到 {max_choice} 之间的数字")
+                
+        except KeyboardInterrupt:
+            print("\n\n用户中断选择")
+            return "download"
+        except Exception as e:
+            print(f"输入错误: {e}")
+
+def create_new_playlist_directory() -> str:
+    """创建新歌单目录"""
+    print("\n=== 创建新歌单目录 ===")
+    
+    while True:
+        try:
+            playlist_name = input("请输入新歌单名称: ").strip()
+            
+            if not playlist_name:
+                print("歌单名称不能为空")
+                continue
+            
+            # 清理名称，移除非法字符
+            clean_name = re.sub(r'[<>:"/\\|?*]', '_', playlist_name)
+            if clean_name != playlist_name:
+                print(f"已清理非法字符，歌单名称: {clean_name}")
+            
+            # 检查是否已存在
+            target_dir = f"../music/{clean_name}"
+            if os.path.exists(target_dir):
+                print(f"歌单 '{clean_name}' 已存在，请选择其他名称")
+                continue
+            
+            # 创建目录
+            try:
+                os.makedirs(target_dir, exist_ok=True)
+                print(f"✅ 已创建歌单目录: {target_dir}")
+                return target_dir
+            except Exception as e:
+                print(f"❌ 创建目录失败: {e}")
+                return "download"
+                
+        except KeyboardInterrupt:
+            print("\n\n用户中断创建")
+            return "download"
+        except Exception as e:
+            print(f"输入错误: {e}")
+
 def display_urls(urls: List[str]):
     """显示URL列表"""
     if not urls:
@@ -175,11 +276,61 @@ def confirm_download() -> bool:
         else:
             print("请输入 Y 或 n")
 
-def execute_download(urls: List[str]):
+def move_files_to_target_directory(target_directory: str) -> bool:
+    """将下载的文件移动到目标目录"""
+    if target_directory == "download":
+        return True  # 不需要移动
+    
+    print(f"\n正在移动文件到目标目录: {target_directory}")
+    
+    # 确保目标目录存在
+    if not os.path.exists(target_directory):
+        try:
+            os.makedirs(target_directory, exist_ok=True)
+        except Exception as e:
+            print(f"❌ 创建目标目录失败: {e}")
+            return False
+    
+    # 查找当前目录下的音频文件
+    audio_extensions = ['.mp3', '.m4a', '.aac', '.wav', '.flac']
+    moved_files = []
+    
+    try:
+        for file in os.listdir('.'):
+            if any(file.lower().endswith(ext) for ext in audio_extensions):
+                source_path = file
+                target_path = os.path.join(target_directory, file)
+                
+                # 如果目标文件已存在，添加序号
+                counter = 1
+                base_name, ext = os.path.splitext(file)
+                while os.path.exists(target_path):
+                    new_name = f"{base_name}_{counter}{ext}"
+                    target_path = os.path.join(target_directory, new_name)
+                    counter += 1
+                
+                # 移动文件
+                os.rename(source_path, target_path)
+                moved_files.append(os.path.basename(target_path))
+                print(f"✅ 已移动: {file} → {os.path.basename(target_path)}")
+        
+        if moved_files:
+            print(f"\n✅ 文件移动完成！共移动 {len(moved_files)} 个文件到: {target_directory}")
+        else:
+            print("⚠️  未找到音频文件需要移动")
+            
+        return True
+        
+    except Exception as e:
+        print(f"❌ 移动文件时出现错误: {e}")
+        return False
+
+def execute_download(urls: List[str], save_directory: str):
     """执行下载"""
     print("开始下载...")
     
     # 构建命令字符串，使用shell执行
+    # 始终先下载到当前目录
     command_parts = ['npx', 'bv2mp3']
     for url in urls:
         command_parts.append(f'--url="{url}"')
@@ -195,7 +346,15 @@ def execute_download(urls: List[str]):
                               capture_output=False,
                               text=True)
         
-        print("\n✅ 下载完成！音频文件已保存到当前目录。")
+        print("\n✅ 下载完成！")
+        
+        # 如果需要移动到其他目录
+        if save_directory != "download":
+            if not move_files_to_target_directory(save_directory):
+                print("⚠️  文件移动失败，文件保留在当前目录")
+                return False
+        else:
+            print("音频文件已保存到当前目录。")
         
     except subprocess.CalledProcessError as e:
         print(f"❌ 下载过程中出现错误: {e}")
@@ -263,12 +422,15 @@ def main():
         if not display_urls(urls):
             sys.exit(0)
         
+        # 选择保存目录
+        save_directory = select_save_directory()
+        
         # 确认下载
         if not confirm_download():
             sys.exit(0)
         
         # 执行下载
-        execute_download(urls)
+        execute_download(urls, save_directory)
         
     except KeyboardInterrupt:
         print("\n\n程序被用户中断")

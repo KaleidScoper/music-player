@@ -611,11 +611,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const guide = [
             '未找到歌词',
             '',
-            '添加方法：将与音频同名的 .lrc 文件放置在以下任一位置：',
-            '• music/歌单/文件名.lrc',
-            '• music/歌单/lyrics/文件名.lrc',
-            '• lyrics/歌单/文件名.lrc',
-            '• music/lyrics/歌单/文件名.lrc'
+            '添加方法：将与音频同名的 .lrc 文件放置在此路径：',
+            '• music/歌单/lyrics/文件名.lrc'
         ].join('\n');
 
         currentLineEl.innerHTML = `<div>${guide.replaceAll('\n', '<br/>')}</div>`;
