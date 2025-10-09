@@ -33,7 +33,7 @@ python download/download.py --debug
 
 ### 使用步骤
 1. 运行脚本
-2. 粘贴B站网页视频分享URL，每粘贴一个按一次回车
+2. 直接粘贴B站分享文本（如：【视频标题】 https://www.bilibili.com/video/...），脚本会自动提取URL
 3. 输入完成后直接按回车开始下载
 4. 等待下载完成
 

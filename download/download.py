@@ -93,10 +93,29 @@ def check_environment():
     print("✅ 环境检查完成！")
     return True
 
+def extract_bilibili_url(text: str) -> str:
+    """从文本中提取B站URL"""
+    # 匹配B站视频URL的正则表达式
+    # 支持多种B站URL格式
+    patterns = [
+        r'https?://www\.bilibili\.com/video/[A-Za-z0-9_\-]+',
+        r'https?://bilibili\.com/video/[A-Za-z0-9_\-]+',
+        r'https?://www\.b23\.tv/[A-Za-z0-9_\-]+',
+        r'https?://b23\.tv/[A-Za-z0-9_\-]+'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            return match.group(0)
+    
+    return None
+
 def collect_urls() -> List[str]:
     """收集用户输入的URL"""
     print("\n=== B站视频批量下载工具 ===")
     print("请输入要下载的B站视频URL（每行一个）")
+    print("支持直接粘贴B站分享文本，脚本会自动提取URL")
     print("输入完成后直接按回车开始下载")
     print()
     
@@ -105,18 +124,23 @@ def collect_urls() -> List[str]:
     
     while True:
         try:
-            url = input(f"URL #{counter} (直接回车结束输入): ").strip()
+            user_input = input(f"URL #{counter} (直接回车结束输入): ").strip()
             
-            if not url:
+            if not user_input:
                 break
             
-            # 验证是否为B站URL
-            if re.search(r'bilibili\.com', url):
-                urls.append(url)
-                print(f"✅ 已添加: {url}")
+            # 尝试从输入文本中提取B站URL
+            extracted_url = extract_bilibili_url(user_input)
+            
+            if extracted_url:
+                urls.append(extracted_url)
+                print(f"✅ 已添加: {extracted_url}")
+                if extracted_url != user_input:
+                    print(f"   原始输入: {user_input[:50]}{'...' if len(user_input) > 50 else ''}")
                 counter += 1
             else:
-                print("⚠️  无效的B站URL，请重新输入")
+                print("⚠️  未找到有效的B站URL，请重新输入")
+                print("   提示: 支持直接粘贴B站分享文本，如：【视频标题】 https://www.bilibili.com/video/...")
                 
         except KeyboardInterrupt:
             print("\n\n用户中断输入")
