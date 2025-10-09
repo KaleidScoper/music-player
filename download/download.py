@@ -3,7 +3,6 @@
 """
 B站视频批量下载工具
 使用 bilibili-video2mp3 工具
-Python版本，避免PowerShell编码问题
 """
 
 import subprocess
@@ -72,15 +71,6 @@ def check_environment():
         return False
     else:
         print("✅ Node.js 已安装")
-    
-    # 检查 npm
-    print("检查 npm...")
-    if not check_command_exists('npm'):
-        print("❌ 错误: 请先安装 npm")
-        print("提示: npm 通常随 Node.js 一起安装")
-        return False
-    else:
-        print("✅ npm 已安装")
     
     # 检查 FFmpeg
     print("检查 FFmpeg...")
@@ -218,15 +208,10 @@ def main():
             print("正在测试命令检测...")
             
             # 测试各个命令
-            for cmd in ['node', 'npm', 'ffmpeg']:
+            for cmd in ['node', 'ffmpeg']:
                 print(f"测试 {cmd}...")
                 try:
-                    if cmd == 'npm':
-                        result = subprocess.run([cmd, '-v'], capture_output=True, text=True, timeout=10)
-                        print(f"  npm -v 返回码: {result.returncode}")
-                        print(f"  输出: {result.stdout.strip()}")
-                        print(f"  错误: {result.stderr.strip()}")
-                    elif cmd == 'node':
+                    if cmd == 'node':
                         result = subprocess.run([cmd, '--version'], capture_output=True, text=True, timeout=10)
                         print(f"  node --version 返回码: {result.returncode}")
                         print(f"  输出: {result.stdout.strip()}")
