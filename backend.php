@@ -61,12 +61,18 @@ if ($_GET['action'] === 'getLyrics') {
         // 移除文件扩展名
         $baseName = pathinfo($songName, PATHINFO_FILENAME);
         
-        // 尝试多个可能的歌词文件位置
+        // 提取歌曲名称部分（第一个"-"之前的部分）
+        $songTitle = explode('-', $baseName)[0];
+        
+        // 尝试多个可能的歌词文件位置，优先使用统一lyrics文件夹，再使用其他位置
         $possibleLyricsFiles = [
-            "music/$folder/$baseName.lrc",                    // 同文件夹
-            "music/$folder/lyrics/$baseName.lrc",             // 子歌词文件夹
-            "lyrics/$folder/$baseName.lrc",                   // 独立歌词文件夹
-            "music/lyrics/$folder/$baseName.lrc"              // 全局歌词文件夹
+            "lyrics/$folder/$baseName.lrc",                   // 统一歌词文件夹（专用歌词，优先级最高）
+            "lyrics/$folder/$songTitle.lrc",                 // 统一歌词文件夹（通用歌词）
+            "music/$folder/$baseName.lrc",                    // 同文件夹（专用歌词）
+            "music/$folder/lyrics/$baseName.lrc",             // 子歌词文件夹（专用歌词）
+            "music/$folder/lyrics/$songTitle.lrc",           // 子歌词文件夹（通用歌词）
+            "music/lyrics/$folder/$baseName.lrc",             // 全局歌词文件夹（专用歌词）
+            "music/lyrics/$folder/$songTitle.lrc"            // 全局歌词文件夹（通用歌词）
         ];
         
         $lyricsFile = null;
