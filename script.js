@@ -129,6 +129,13 @@ document.addEventListener("DOMContentLoaded", () => {
         renderPagination();
         clearLyrics();
         hideLoadingState();
+        
+        // 预加载歌词（延迟执行，避免阻塞UI）
+        if (songs.length > 0) {
+            setTimeout(() => {
+                preloadLyrics(songs, selectedPlaylists[0]);
+            }, 100);
+        }
     }
     
     // 显示加载状态
@@ -622,13 +629,33 @@ document.addEventListener("DOMContentLoaded", () => {
         lyricsDisplay.appendChild(nextLineEl);
     }
 
+    // 歌词缓存
+    let lyricsCache = new Map();
+    
     function loadLyrics(songName, folder) {
         console.log('正在加载歌词:', folder, songName);
+        
+        // 检查内存缓存
+        const cacheKey = `${folder}_${songName}`;
+        if (lyricsCache.has(cacheKey)) {
+            const cachedData = lyricsCache.get(cacheKey);
+            if (cachedData.success) {
+                lyricsData = parseLyrics(cachedData.lyrics);
+                displayLyrics();
+                return;
+            } else {
+                clearLyrics();
+                return;
+            }
+        }
         
         fetch(`backend.php?action=getLyrics&folder=${encodeURIComponent(folder)}&song=${encodeURIComponent(songName)}`)
             .then(res => res.json())
             .then(data => {
                 console.log('歌词加载结果:', data);
+                
+                // 缓存结果
+                lyricsCache.set(cacheKey, data);
                 
                 if (data.success) {
                     lyricsData = parseLyrics(data.lyrics);
@@ -641,6 +668,30 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(error => {
                 console.error('加载歌词失败:', error);
                 clearLyrics();
+            });
+    }
+    
+    // 预加载歌词功能
+    function preloadLyrics(songs, folder) {
+        if (songs.length === 0) return;
+        
+        const songNames = songs.map(song => song.name);
+        const songsParam = encodeURIComponent(JSON.stringify(songNames));
+        
+        fetch(`backend.php?action=getBatchLyrics&folder=${encodeURIComponent(folder)}&songs=${songsParam}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // 将批量获取的歌词存入缓存
+                    Object.entries(data.results).forEach(([songName, result]) => {
+                        const cacheKey = `${folder}_${songName}`;
+                        lyricsCache.set(cacheKey, result);
+                    });
+                    console.log(`预加载了 ${Object.keys(data.results).length} 个歌词文件`);
+                }
+            })
+            .catch(error => {
+                console.error('预加载歌词失败:', error);
             });
     }
 
@@ -808,6 +859,29 @@ document.addEventListener("DOMContentLoaded", () => {
             keysToDelete.forEach(key => songsCache.delete(key));
             console.log('清理了旧缓存以释放内存');
         }
+    }
+    
+    // 缓存管理功能
+    function clearLyricsCache() {
+        lyricsCache.clear();
+        fetch('backend.php?action=clearLyricsCache')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('歌词缓存已清除');
+                } else {
+                    console.error('清除缓存失败:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('清除缓存失败:', error);
+            });
+    }
+    
+    // 添加缓存管理到控制台（开发调试用）
+    if (typeof window !== 'undefined') {
+        window.clearLyricsCache = clearLyricsCache;
+        window.lyricsCache = lyricsCache;
     }
     
     // 初始化性能优化

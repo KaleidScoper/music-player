@@ -1,6 +1,96 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
+// 歌词缓存配置
+define('LYRICS_CACHE_ENABLED', true);
+define('LYRICS_CACHE_DURATION', 300); // 5分钟缓存
+define('LYRICS_INDEX_CACHE_FILE', 'lyrics_index_cache.json');
+
+// 歌词缓存类
+class LyricsCache {
+    private static $cache = [];
+    private static $indexCache = null;
+    
+    public static function get($key) {
+        if (!LYRICS_CACHE_ENABLED) return null;
+        
+        if (isset(self::$cache[$key])) {
+            $data = self::$cache[$key];
+            if (time() - $data['timestamp'] < LYRICS_CACHE_DURATION) {
+                return $data['content'];
+            }
+            unset(self::$cache[$key]);
+        }
+        return null;
+    }
+    
+    public static function set($key, $content) {
+        if (!LYRICS_CACHE_ENABLED) return;
+        
+        self::$cache[$key] = [
+            'content' => $content,
+            'timestamp' => time()
+        ];
+    }
+    
+    public static function getLyricsIndex($folder) {
+        if (self::$indexCache === null) {
+            self::loadLyricsIndex();
+        }
+        
+        return isset(self::$indexCache[$folder]) ? self::$indexCache[$folder] : [];
+    }
+    
+    private static function loadLyricsIndex() {
+        if (file_exists(LYRICS_INDEX_CACHE_FILE)) {
+            $cacheData = json_decode(file_get_contents(LYRICS_INDEX_CACHE_FILE), true);
+            if ($cacheData && time() - $cacheData['timestamp'] < LYRICS_CACHE_DURATION) {
+                self::$indexCache = $cacheData['index'];
+                return;
+            }
+        }
+        
+        // 重新构建索引
+        self::buildLyricsIndex();
+    }
+    
+    private static function buildLyricsIndex() {
+        $index = [];
+        
+        // 仅扫描统一歌词目录
+        if (is_dir('lyrics')) {
+            $folders = array_filter(glob('lyrics/*'), 'is_dir');
+            foreach ($folders as $folder) {
+                $folderName = basename($folder);
+                $index[$folderName] = [];
+                
+                $lrcFiles = glob($folder . '/*.lrc');
+                foreach ($lrcFiles as $lrcFile) {
+                    $fileName = basename($lrcFile, '.lrc');
+                    $index[$folderName][$fileName] = $lrcFile;
+                }
+            }
+        }
+        
+        self::$indexCache = $index;
+        
+        // 保存到缓存文件
+        $cacheData = [
+            'timestamp' => time(),
+            'index' => $index
+        ];
+        file_put_contents(LYRICS_INDEX_CACHE_FILE, json_encode($cacheData, JSON_UNESCAPED_UNICODE));
+    }
+    
+    public static function clearCache() {
+        self::$cache = [];
+        self::$indexCache = null;
+        if (file_exists(LYRICS_INDEX_CACHE_FILE)) {
+            unlink(LYRICS_INDEX_CACHE_FILE);
+        }
+    }
+}
+
 if ($_GET['action'] === 'getFolders') {
     try {
         $folders = array_filter(glob('music/*'), 'is_dir');
@@ -58,45 +148,118 @@ if ($_GET['action'] === 'getLyrics') {
         $folder = $_GET['folder'];
         $songName = $_GET['song'];
         
+        // 生成缓存键
+        $cacheKey = "lyrics_{$folder}_{$songName}";
+        
+        // 尝试从缓存获取
+        $cachedResult = LyricsCache::get($cacheKey);
+        if ($cachedResult !== null) {
+            echo json_encode($cachedResult, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        
         // 移除文件扩展名
         $baseName = pathinfo($songName, PATHINFO_FILENAME);
         
         // 提取歌曲名称部分（第一个"-"之前的部分）
         $songTitle = explode('-', $baseName)[0];
         
-        // 尝试多个可能的歌词文件位置，优先使用统一lyrics文件夹，再使用其他位置
-        $possibleLyricsFiles = [
-            "lyrics/$folder/$baseName.lrc",                   // 统一歌词文件夹（专用歌词，优先级最高）
-            "lyrics/$folder/$songTitle.lrc",                 // 统一歌词文件夹（通用歌词）
-            "music/$folder/$baseName.lrc",                    // 同文件夹（专用歌词）
-            "music/$folder/lyrics/$baseName.lrc",             // 子歌词文件夹（专用歌词）
-            "music/$folder/lyrics/$songTitle.lrc",           // 子歌词文件夹（通用歌词）
-            "music/lyrics/$folder/$baseName.lrc",             // 全局歌词文件夹（专用歌词）
-            "music/lyrics/$folder/$songTitle.lrc"            // 全局歌词文件夹（通用歌词）
-        ];
-        
+        // 使用索引快速查找歌词文件（仅查找统一歌词目录）
+        $lyricsIndex = LyricsCache::getLyricsIndex($folder);
         $lyricsFile = null;
-        foreach ($possibleLyricsFiles as $file) {
-            if (file_exists($file)) {
-                $lyricsFile = $file;
+        
+        // 按优先级查找（仅使用统一歌词目录）
+        $searchKeys = [$baseName, $songTitle];
+        foreach ($searchKeys as $key) {
+            if (isset($lyricsIndex[$key])) {
+                $lyricsFile = $lyricsIndex[$key];
                 break;
             }
         }
         
+        $result = null;
         if ($lyricsFile) {
             $lyrics = file_get_contents($lyricsFile);
             // 确保编码为UTF-8
             $lyrics = mb_convert_encoding($lyrics, 'UTF-8', 'auto');
-            echo json_encode(['success' => true, 'lyrics' => $lyrics], JSON_UNESCAPED_UNICODE);
+            $result = ['success' => true, 'lyrics' => $lyrics];
         } else {
-            echo json_encode([
+            $result = [
                 'success' => false, 
-                'message' => '歌词文件不存在',
-                'searched_paths' => $possibleLyricsFiles
-            ]);
+                'message' => '歌词文件不存在'
+            ];
         }
+        
+        // 缓存结果
+        LyricsCache::set($cacheKey, $result);
+        
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
         echo json_encode(['error' => '获取歌词失败: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+if ($_GET['action'] === 'clearLyricsCache') {
+    try {
+        LyricsCache::clearCache();
+        echo json_encode(['success' => true, 'message' => '歌词缓存已清除']);
+    } catch (Exception $e) {
+        echo json_encode(['error' => '清除缓存失败: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+if ($_GET['action'] === 'getBatchLyrics') {
+    try {
+        $folder = $_GET['folder'];
+        $songNames = json_decode($_GET['songs'], true);
+        
+        if (!is_array($songNames)) {
+            echo json_encode(['error' => '无效的歌曲列表']);
+            exit;
+        }
+        
+        $results = [];
+        foreach ($songNames as $songName) {
+            $cacheKey = "lyrics_{$folder}_{$songName}";
+            $cachedResult = LyricsCache::get($cacheKey);
+            
+            if ($cachedResult !== null) {
+                $results[$songName] = $cachedResult;
+            } else {
+                // 快速查找逻辑
+                $baseName = pathinfo($songName, PATHINFO_FILENAME);
+                $songTitle = explode('-', $baseName)[0];
+                
+                $lyricsIndex = LyricsCache::getLyricsIndex($folder);
+                $lyricsFile = null;
+                
+                $searchKeys = [$baseName, $songTitle];
+                foreach ($searchKeys as $key) {
+                    if (isset($lyricsIndex[$key])) {
+                        $lyricsFile = $lyricsIndex[$key];
+                        break;
+                    }
+                }
+                
+                $result = null;
+                if ($lyricsFile) {
+                    $lyrics = file_get_contents($lyricsFile);
+                    $lyrics = mb_convert_encoding($lyrics, 'UTF-8', 'auto');
+                    $result = ['success' => true, 'lyrics' => $lyrics];
+                } else {
+                    $result = ['success' => false, 'message' => '歌词文件不存在'];
+                }
+                
+                LyricsCache::set($cacheKey, $result);
+                $results[$songName] = $result;
+            }
+        }
+        
+        echo json_encode(['success' => true, 'results' => $results], JSON_UNESCAPED_UNICODE);
+    } catch (Exception $e) {
+        echo json_encode(['error' => '批量获取歌词失败: ' . $e->getMessage()]);
     }
     exit;
 }
