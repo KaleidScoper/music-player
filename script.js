@@ -616,10 +616,10 @@ document.addEventListener("DOMContentLoaded", () => {
         nextLineEl.className = "lyrics-line lyric-next";
 
         const guide = [
-            '未找到歌词',
-            '',
-            '添加方法：将与音频同名的 .lrc 文件放置在此路径：',
-            '• music/歌单/lyrics/文件名.lrc'
+            '未成功加载歌词',
+            '添加方法：将与音频文件同名的 .lrc 文件',
+            '或以歌曲（音频文件第一个“-”前的内容）命名的 .lrc 文件',
+            '放置在lyrics/歌单/文件名.lrc路径下'
         ].join('\n');
 
         currentLineEl.innerHTML = `<div>${guide.replaceAll('\n', '<br/>')}</div>`;
