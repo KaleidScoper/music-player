@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const nowPlayingTitle = document.getElementById("now-playing-title");
     const pagination = document.getElementById("pagination");
     const lyricsDisplay = document.getElementById("lyrics-display");
-    const themeColors = document.querySelectorAll(".theme-color");
     const lyricsContainer = document.getElementById("lyrics-container");
     const playlistCheckboxes = document.getElementById("playlist-checkboxes");
     const toggleTranslationCheckbox = document.getElementById("toggle-translation");
@@ -34,37 +33,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const CACHE_SIZE_LIMIT = 1000; // 缓存大小限制
     const BATCH_SIZE = 50; // 批处理大小
 
-    // 配色方案功能
-    function setTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('selectedTheme', theme);
-    }
-
-    // 加载保存的配色方案，默认为图片主题
-    const savedTheme = localStorage.getItem('selectedTheme') || 'image';
-    setTheme(savedTheme);
-    
-    // 初始化主题选择器
-    function initThemeSelector() {
-        themeColors.forEach(colorElement => {
-            const theme = colorElement.getAttribute('data-theme');
-            if (theme === savedTheme) {
-                colorElement.classList.add('selected');
-            }
-            
-            colorElement.addEventListener('click', function() {
-                // 移除所有选中状态
-                themeColors.forEach(el => el.classList.remove('selected'));
-                // 添加当前选中状态
-                this.classList.add('selected');
-                // 应用主题
-                setTheme(theme);
-            });
-        });
-    }
-    
-    // 初始化主题选择器
-    initThemeSelector();
+    // 清除旧版本可能残留的主题属性
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.removeItem('selectedTheme');
 
     // 下拉菜单控制
     function toggleDropdown() {
