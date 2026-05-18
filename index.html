@@ -9,15 +9,15 @@
 <body>
     <!-- 歌单选择 -->
     <div class="playlist-header">
-        <div class="playlist-dropdown-container">
-            <button id="playlist-dropdown-btn">
+        <details class="playlist-dropdown" id="playlist-dropdown">
+            <summary class="playlist-dropdown-btn" id="playlist-dropdown-btn">
                 <span id="playlist-dropdown-text">选择歌单</span>
                 <span class="dropdown-arrow">▾</span>
-            </button>
-            <div id="playlist-dropdown-menu">
+            </summary>
+            <div class="playlist-dropdown-menu" id="playlist-dropdown-menu">
                 <div id="playlist-checkboxes"></div>
             </div>
-        </div>
+        </details>
     </div>
 
     <!-- 歌曲列表 -->

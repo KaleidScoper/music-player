@@ -6,8 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const lyricsDisplay = document.getElementById("lyrics-display");
     const playlistCheckboxes = document.getElementById("playlist-checkboxes");
     const toggleTranslationCheckbox = document.getElementById("toggle-translation");
-    const playlistDropdownBtn = document.getElementById("playlist-dropdown-btn");
-    const playlistDropdownMenu = document.getElementById("playlist-dropdown-menu");
     const playlistDropdownText = document.getElementById("playlist-dropdown-text");
 
     let songs = [];
@@ -27,34 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const songsCache = new Map();
     const lyricsCache = new Map();
-
-    // ---- Dropdown ----
-
-    function toggleDropdown() {
-        if (playlistDropdownMenu.classList.contains("show")) {
-            playlistDropdownMenu.classList.remove("show");
-            playlistDropdownBtn.classList.remove("open");
-        } else {
-            playlistDropdownMenu.classList.add("show");
-            playlistDropdownBtn.classList.add("open");
-        }
-    }
-
-    playlistDropdownBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleDropdown();
-    });
-
-    document.addEventListener("click", (e) => {
-        if (!playlistDropdownBtn.contains(e.target) && !playlistDropdownMenu.contains(e.target)) {
-            playlistDropdownMenu.classList.remove("show");
-            playlistDropdownBtn.classList.remove("open");
-        }
-    });
-
-    playlistDropdownMenu.addEventListener("click", (e) => {
-        e.stopPropagation();
-    });
 
     function updateDropdownText() {
         const checkedBoxes = playlistCheckboxes.querySelectorAll("input[type=\"checkbox\"]:checked");
@@ -140,8 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const label = document.createElement("span");
             label.textContent = folder;
 
-            div.addEventListener("click", (e) => {
-                e.stopPropagation();
+            div.addEventListener("click", () => {
                 cb.checked = !cb.checked;
                 if (cb.checked) {
                     div.classList.add("selected");
