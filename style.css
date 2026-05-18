@@ -1,13 +1,13 @@
-/* 文人书斋暗色主题 */
+/* 文人书斋暗色主题 — 无彩色强调，以字重与明度建立层级 */
 
 :root {
   --bg: #1c1f26;
   --surface: #2a2f3a;
+  --surface-emphasis: #303640;
   --border: #3b414c;
+  --border-emphasis: #555d6b;
   --text: #d0d0d0;
   --text-secondary: #aaa;
-  --accent: #80cfff;
-  --accent-hover: #a8daff;
   --muted: #888;
 
   --font-ui: "Noto Sans SC", "Source Han Sans SC", "PingFang SC",
@@ -17,7 +17,6 @@
 
   --radius-sm: 4px;
   --radius-md: 6px;
-  --radius-lg: 8px;
   --transition-fast: 0.1s ease-in-out;
   --transition-base: 0.3s ease-in-out;
 }
@@ -62,15 +61,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: border-color var(--transition-fast);
+  transition: background var(--transition-fast);
 }
 
-.playlist-dropdown-btn:hover {
-  border-color: var(--accent);
+.playlist-dropdown-btn:hover,
+.playlist-dropdown-btn.open {
+  background: var(--surface-emphasis);
 }
 
 .dropdown-arrow {
   font-size: 11px;
+  color: var(--text-secondary);
   transition: transform var(--transition-base);
 }
 
@@ -109,10 +110,11 @@ body {
   cursor: pointer;
   transition: background var(--transition-fast);
   user-select: none;
+  border-left: 2px solid transparent;
 }
 
 .playlist-checkbox:hover {
-  background: rgba(128, 207, 255, 0.06);
+  background: var(--surface-emphasis);
 }
 
 .playlist-checkbox input[type="checkbox"] {
@@ -122,9 +124,8 @@ body {
 }
 
 .playlist-checkbox.selected {
-  background: var(--accent);
-  color: #1c1f26;
-  font-weight: 600;
+  font-weight: 700;
+  border-left-color: var(--text);
 }
 
 /* ---- 歌曲列表 ---- */
@@ -143,19 +144,23 @@ body {
 
 #song-list li {
   padding: 8px 10px;
-  border-left: 3px solid transparent;
+  border-left: 2px solid transparent;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-base);
+  color: var(--text-secondary);
+  transition: background var(--transition-fast), color var(--transition-fast),
+              border-color var(--transition-base);
 }
 
 #song-list li:hover {
-  background: rgba(128, 207, 255, 0.05);
+  background: var(--surface-emphasis);
+  color: var(--text);
 }
 
 #song-list li.playing {
-  border-left-color: var(--accent);
-  font-weight: 600;
+  border-left-color: var(--border-emphasis);
+  color: var(--text);
+  font-weight: 700;
 }
 
 #song-list li.empty-msg {
@@ -168,6 +173,7 @@ body {
 
 #song-list li.empty-msg:hover {
   background: transparent;
+  color: var(--muted);
 }
 
 /* ---- 分页器 ---- */
@@ -184,25 +190,24 @@ body {
 #pagination button {
   padding: 3px 8px;
   min-width: 28px;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 12px;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast),
-              border-color var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 #pagination button:hover {
-  border-color: var(--accent);
+  background: var(--surface-emphasis);
+  color: var(--text);
 }
 
 #pagination button.active {
-  background: var(--accent);
-  color: #1c1f26;
-  border-color: var(--accent);
+  font-weight: 700;
+  color: var(--text);
 }
 
 /* ---- 播放控制 ---- */
@@ -218,19 +223,22 @@ body {
 }
 
 #now-playing-title {
-  color: var(--text);
+  font-family: var(--font-text);
   font-size: 13px;
+  font-weight: 700;
 }
 
 #now-playing-title:empty::before {
   content: "未在播放";
   color: var(--muted);
+  font-family: var(--font-ui);
+  font-weight: 400;
 }
 
 #audio-player {
   width: 100%;
   height: 32px;
-  accent-color: var(--accent);
+  accent-color: var(--text-secondary);
 }
 
 .playback-options {
@@ -242,25 +250,25 @@ body {
 
 .playback-options button {
   padding: 4px 10px;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 12px;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast),
-              border-color var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .playback-options button:hover {
-  border-color: var(--accent);
+  background: var(--surface-emphasis);
+  color: var(--text);
 }
 
 .playback-options button.active {
-  background: var(--accent);
-  color: #1c1f26;
-  border-color: var(--accent);
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface);
 }
 
 /* ---- 歌词 ---- */
@@ -296,23 +304,23 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .lyrics-line {
   padding: 2px 6px;
   border-radius: var(--radius-sm);
-  transition: color var(--transition-base);
 }
 
 .lyric-prev, .lyric-next {
-  opacity: 0.5;
+  color: var(--muted);
   font-size: 0.9em;
 }
 
 .lyric-current {
   font-family: var(--font-text);
-  font-size: 1.1em;
+  font-size: 1.15em;
+  font-weight: 700;
 }
 
 .lyrics-empty {
