@@ -3,64 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线溜冰</title>
+    <title>音乐播放器</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="player-container">
-        <h1>在线溜冰</h1>
-        
-        <!-- 歌单选择和歌曲列表 -->
-        <div class="playlist">
-            <div class="playlist-header">
-                <label>选择歌单：</label>
-                <div class="playlist-dropdown-container">
-                    <button id="playlist-dropdown-btn" class="playlist-dropdown-btn">
-                        <span id="playlist-dropdown-text">选择歌单</span>
-                        <i class="fa fa-chevron-down"></i>
-                    </button>
-                    <div id="playlist-dropdown-menu" class="playlist-dropdown-menu">
-                        <div id="playlist-checkboxes" class="playlist-checkboxes"></div>
-                    </div>
-                </div>
+    <!-- 歌单选择 -->
+    <div class="playlist-header">
+        <div class="playlist-dropdown-container">
+            <button id="playlist-dropdown-btn">
+                <span id="playlist-dropdown-text">选择歌单</span>
+                <span class="dropdown-arrow">▾</span>
+            </button>
+            <div id="playlist-dropdown-menu">
+                <div id="playlist-checkboxes"></div>
             </div>
-            <ul id="song-list"></ul>
-            <!-- 分页 -->
-            <div id="pagination" class="pagination"></div>
-        </div>
-        
-        <!-- 播放控制 -->
-        <div class="controls">
-            <div class="now-playing-info">
-                <span class="now-playing-label">正在播放：</span>
-                <span id="now-playing-title">无</span>
-            </div>
-            <audio id="audio-player" controls></audio>
-            <div class="playback-options">
-                <button id="btn-loop"><i class="fa fa-repeat"></i> 单曲循环</button>
-                <button id="btn-sequential"><i class="fa fa-bars"></i> 顺序播放</button>
-                <button id="btn-random"><i class="fa fa-random"></i> 随机播放</button>
-            </div>
-        </div>
-        
-        <!-- 歌词显示 -->
-        <div class="lyrics-header">
-            <label class="toggle-translation">
-                <input type="checkbox" id="toggle-translation" checked>
-                <span>显示翻译</span>
-                <i class="fa fa-info-circle" title="若同一时间戳存在两行歌词，前一行视为原文，后一行视为翻译；超过两行的部分将被忽略。"></i>
-            </label>
-        </div>
-        <div id="lyrics-container" class="lyrics-container" aria-hidden="false">
-            <div id="lyrics-display" class="lyrics-display"></div>
-        </div>
-        
-        <div class="copyright">
-            <p>代码托管于<a href="https://github.com/KaleidScoper/music-player" target="_blank">Github</a>，有Bug请直接提交Issues。</p>
-            <p>&copy; 2025 KaleidScoper. All rights reserved.</p>
         </div>
     </div>
+
+    <!-- 歌曲列表 -->
+    <div class="song-list-area">
+        <ul id="song-list"></ul>
+    </div>
+
+    <!-- 分页 -->
+    <div id="pagination"></div>
+
+    <!-- 播放控制 -->
+    <div class="controls">
+        <div class="now-playing">
+            <span id="now-playing-title"></span>
+        </div>
+        <audio id="audio-player" controls></audio>
+        <div class="playback-options">
+            <button id="btn-loop">&#x21BB; 单曲循环</button>
+            <button id="btn-sequential">&#x2192; 顺序</button>
+            <button id="btn-random">&#x21C4; 随机</button>
+        </div>
+    </div>
+
+    <!-- 歌词 -->
+    <div class="lyrics-header">
+        <label class="toggle-translation">
+            <input type="checkbox" id="toggle-translation" checked>
+            <span>翻译</span>
+        </label>
+    </div>
+    <div class="lyrics-area">
+        <div id="lyrics-display" class="lyrics-display"></div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
