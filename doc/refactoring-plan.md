@@ -51,9 +51,64 @@ start.bat         # Windows
 
 ---
 
-## 四、文件变更清单
+## 四、目录结构重构
 
-### 4.1 新增文件
+### 4.1 现状
+
+```
+music/
+├── 歌单名1/
+│   ├── 歌曲1.mp3
+│   └── 歌曲2.m4a
+└── 歌单名2/
+    └── 歌曲3.mp3
+
+lyrics/                          ← 镜像目录，手动维护一致性
+├── 歌单名1/
+│   ├── 歌曲1.lrc
+│   └── 歌曲2.lrc
+└── 歌单名2/
+    └── 歌曲3.lrc
+```
+
+**问题**：
+- `music/` 和 `lyrics/` 是镜像目录，增删歌曲要操作两处，无约束机制保证一致性
+- 歌词匹配需要三级 fallback：完整文件名 → 截取 `-` 前缀 → 找不到；匹配逻辑 30+ 行，是结构缺陷的补偿
+- `music/` 下残留 `.lrc` 文件，说明最初混放后来拆出，有历史包袱
+- 用户必须将音频和歌词重命名为同一基础名
+
+### 4.2 目标
+
+```
+music/
+└── 歌单名/
+    └── 歌曲显示名/              ← 文件夹名即为歌曲名，无需重命名文件
+        ├── *.mp3 / *.m4a / ...  ← 至少一个音频文件（取第一个）
+        └── *.lrc                ← 可选，有则自动加载（取第一个）
+```
+
+**优势**：
+- **免重命名**：用户下载的文件名是什么就是什么，文件夹名决定显示名
+- **自包含**：一首歌的音频和歌词在同一文件夹内，拖入即完成，删文件夹即删除
+- **无镜像目录**：取消独立 `lyrics/` 目录，不再需要维护两套目录树的一致性
+- **匹配退化为 glob**：同目录下 `*.lrc` 即歌词，`*.mp3/*.m4a/...` 即音频，不需要任何文件名匹配逻辑
+
+### 4.3 迁移注意事项
+
+重构后**不向后兼容**旧目录结构。现有 `music/` 下的歌曲需要整理为新格式。迁移脚本逻辑：
+
+```
+旧 music/歌单/xxx.mp3  →  新 music/歌单/xxx/xxx.mp3（或任意命名.mp3）
+旧 lyrics/歌单/xxx.lrc  →  新 music/歌单/xxx/xxx.lrc（或任意命名.lrc）
+```
+
+可提供一次性迁移脚本 `migrate.sh`（可选），也可直接在 README 中说明新结构让用户自行整理。
+
+---
+
+## 五、文件变更清单
+
+### 5.1 新增文件
 
 | 文件 | 说明 |
 |------|------|
@@ -62,25 +117,27 @@ start.bat         # Windows
 | `start.sh` | Linux/macOS 启动脚本 |
 | `start.bat` | Windows 启动脚本 |
 
-### 4.2 修改文件
+### 5.2 修改文件
 
 | 文件 | 变更内容 |
 |------|----------|
-| `script.js` | API 请求路径从 `backend.php?action=...` 改为 `/api/...` |
-| `README.md` | 更新快速开始部分，去掉 nginx/PHP 要求 |
+| `script.js` | API 路径改为 `/api/...`；歌曲数据结构适配新目录结构 |
+| `download/download.py` | 下载后文件放入新目录结构（创建歌曲子文件夹） |
+| `README.md` | 更新目录结构说明、快速开始章节 |
 
-### 4.3 删除文件
+### 5.3 删除文件
 
 | 文件 | 原因 |
 |------|------|
 | `backend.php` | 功能迁移至 `server.py` |
 | `debug.php` | 诊断功能合并到 `server.py` 启动日志中 |
+| `lyrics/` 目录 | 歌词与音频合并到歌曲文件夹内 |
 
 ---
 
-## 五、server.py 设计
+## 六、server.py 设计
 
-### 5.1 路由表
+### 6.1 路由表
 
 ```
 GET  /                    → 返回 index.html
@@ -90,26 +147,42 @@ GET  /background.jpg      → 静态文件
 GET  /music/<path>        → 音频文件流（支持 Range 请求，用于 seek）
 GET  /api/folders         → 获取所有歌单文件夹名
 GET  /api/songs           → 获取指定歌单的歌曲列表  (?folder=xxx)
-GET  /api/lyrics          → 获取单首歌词              (?folder=xxx&song=xxx)
-GET  /api/batch-lyrics    → 批量获取歌词              (?folder=xxx&songs=json)
+GET  /api/lyrics          → 获取指定歌曲的歌词      (?folder=xxx&song=xxx)
+GET  /api/batch-lyrics    → 批量获取歌词             (?folder=xxx&songs=json)
 POST /api/clear-cache     → 清除歌词缓存
 ```
 
-### 5.2 核心模块
+### 6.2 核心逻辑简化
 
-```
-server.py
-├── LyricsCache      → 内存歌词索引 + LRU 缓存（原 PHP LyricsCache 的 Python 移植）
-├── get_folders()    → 扫描 music/ 目录
-├── get_songs()      → 扫描指定歌单下的音频文件
-├── get_lyrics()     → 按优先级匹配歌词文件并返回内容
-├── serve_music()    → 流式返回音频，支持 Range 头（HTML5 Audio seek 必需）
-└── main()           → 解析命令行参数，启动 Flask
+#### 获取歌单（get_folders）
+```python
+# 仅需列出 music/ 下的子目录
+os.listdir('music')
 ```
 
-### 5.3 Range 请求支持
+#### 获取歌曲（get_songs）
+```python
+# 列出 music/歌单/ 下的子目录，每个子目录是一首歌
+# 检查子目录内是否有音频文件，有则返回
+for entry in os.listdir(f'music/{folder}'):
+    song_dir = f'music/{folder}/{entry}'
+    if os.path.isdir(song_dir) and has_audio(song_dir):
+        songs.append(entry)
+```
 
-HTML5 `<audio>` 的 seek 功能依赖 HTTP Range 请求。Flask 的 `send_file` 默认不支持 Range，需手动实现或使用 `werkzeug` 的 `Range` 中间件。方案：
+#### 获取歌词（get_lyrics）
+```python
+# 退化为同目录下 glob *.lrc，取第一个
+lrc_files = glob.glob(f'music/{folder}/{song_name}/*.lrc')
+if lrc_files:
+    return read_file(lrc_files[0])
+```
+
+**旧代码中约 30 行的三级 fallback 匹配逻辑全部消失。**
+
+### 6.3 Range 请求支持
+
+HTML5 `<audio>` 的 seek 功能依赖 HTTP Range 请求。实现方案：
 
 ```python
 from flask import request, Response
@@ -119,7 +192,7 @@ def serve_music(path):
     # 确保 Chrome/Safari 等浏览器的 seek 正常工作
 ```
 
-### 5.4 命令行参数
+### 6.4 命令行参数
 
 ```
 python server.py                 # 默认 0.0.0.0:8080
@@ -130,7 +203,7 @@ python server.py --debug          # 开发模式（热重载）
 
 ---
 
-## 六、启动脚本设计
+## 七、启动脚本设计
 
 ### start.sh (Linux/macOS)
 
@@ -152,9 +225,9 @@ REM 同等逻辑，适配 Windows 命令
 
 ---
 
-## 七、前后端对接变更
+## 八、前后端对接变更
 
-script.js 中的变更点（6处 fetch 调用）：
+### script.js 中的 fetch 调用
 
 | 原调用 | 新调用 |
 |--------|--------|
@@ -164,26 +237,26 @@ script.js 中的变更点（6处 fetch 调用）：
 | `backend.php?action=getBatchLyrics&folder=...&songs=...` | `/api/batch-lyrics?folder=...&songs=...` |
 | `backend.php?action=clearLyricsCache` | `/api/clear-cache` (POST) |
 
-audio `src` 属性不变：`music/...` 路径由 Flask 统一处理。
+### 歌曲数据结构变化
 
----
+```
+旧: { name: "吹灭小山河-法里达.mp3", folder: "歌单", fullPath: "歌单/吹灭小山河-法里达.mp3" }
+新: { name: "吹灭小山河-法里达",      folder: "歌单", audioPath: "歌单/吹灭小山河-法里达/xxx.mp3" }
+```
 
-## 八、不涉及的部分
-
-以下模块保持不变：
-- `download/download.py` — 已是独立 Python 脚本，无 PHP 依赖
-- `music/` 和 `lyrics/` 目录结构 — 完全兼容
-- `index.html`, `style.css` — 无需改动
-- `doc/`, `LICENSE` — 照旧
+显示名直接使用文件夹名，不再需要从文件名剥离扩展名。
 
 ---
 
 ## 九、实施步骤
 
-1. 创建 `server.py`，实现全部 API 和静态文件服务
-2. 创建 `requirements.txt`
-3. 创建 `start.sh` 和 `start.bat`
-4. 修改 `script.js` 中的 API 路径
-5. 删除 `backend.php` 和 `debug.php`
-6. 更新 `README.md` 的快速开始章节
-7. 全流程测试：克隆 → `./start.sh` → 浏览器播放
+1. 整理现有 `music/` 目录为新结构（歌曲文件夹化，移入对应 `.lrc`）
+2. 删除 `lyrics/` 目录
+3. 创建 `server.py`，实现全部 API 和静态文件服务
+4. 创建 `requirements.txt`
+5. 创建 `start.sh` 和 `start.bat`
+6. 修改 `script.js`：API 路径 + 数据结构适配
+7. 修改 `download/download.py`：下载后创建歌曲子文件夹
+8. 更新 `README.md`
+9. 删除 `backend.php` 和 `debug.php`
+10. 全流程测试：克隆 → `./start.sh` → 浏览器播放

@@ -277,50 +277,49 @@ def confirm_download() -> bool:
             print("请输入 Y 或 n")
 
 def move_files_to_target_directory(target_directory: str) -> bool:
-    """将下载的文件移动到目标目录"""
+    """将下载的文件移动到目标目录（歌曲文件夹化结构）"""
     if target_directory == "download":
-        return True  # 不需要移动
-    
+        return True
+
     print(f"\n正在移动文件到目标目录: {target_directory}")
-    
-    # 确保目标目录存在
+
     if not os.path.exists(target_directory):
         try:
             os.makedirs(target_directory, exist_ok=True)
         except Exception as e:
             print(f"❌ 创建目标目录失败: {e}")
             return False
-    
-    # 查找当前目录下的音频文件
+
     audio_extensions = ['.mp3', '.m4a', '.aac', '.wav', '.flac']
     moved_files = []
-    
+
     try:
         for file in os.listdir('.'):
             if any(file.lower().endswith(ext) for ext in audio_extensions):
+                base_name = os.path.splitext(file)[0]
+                song_dir = os.path.join(target_directory, base_name)
+                os.makedirs(song_dir, exist_ok=True)
+
                 source_path = file
-                target_path = os.path.join(target_directory, file)
-                
-                # 如果目标文件已存在，添加序号
+                target_path = os.path.join(song_dir, file)
+
                 counter = 1
-                base_name, ext = os.path.splitext(file)
                 while os.path.exists(target_path):
-                    new_name = f"{base_name}_{counter}{ext}"
-                    target_path = os.path.join(target_directory, new_name)
+                    new_name = f"{base_name}_{counter}{os.path.splitext(file)[1]}"
+                    target_path = os.path.join(song_dir, new_name)
                     counter += 1
-                
-                # 移动文件
+
                 os.rename(source_path, target_path)
                 moved_files.append(os.path.basename(target_path))
-                print(f"✅ 已移动: {file} → {os.path.basename(target_path)}")
-        
+                print(f"✅ 已移动: {file} → {os.path.relpath(target_path)}")
+
         if moved_files:
             print(f"\n✅ 文件移动完成！共移动 {len(moved_files)} 个文件到: {target_directory}")
         else:
             print("⚠️  未找到音频文件需要移动")
-            
+
         return True
-        
+
     except Exception as e:
         print(f"❌ 移动文件时出现错误: {e}")
         return False

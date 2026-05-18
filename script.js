@@ -155,16 +155,12 @@ document.addEventListener("DOMContentLoaded", () => {
         loadingStates.set(folder, true);
         
         try {
-            const response = await fetch(`backend.php?action=getSongs&folder=${encodeURIComponent(folder)}`);
+            const response = await fetch(`/api/songs?folder=${encodeURIComponent(folder)}`);
             const data = await response.json();
-            
+
             let songs = [];
-            if (!data.error) {
-                songs = data.map(song => ({
-                    name: song,
-                    folder: folder,
-                    fullPath: `${folder}/${song}`
-                }));
+            if (!data.error && Array.isArray(data)) {
+                songs = data;
             }
             
             // 缓存结果
@@ -281,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // 加载文件夹和文件
-    fetch("backend.php?action=getFolders")
+    fetch("/api/folders")
         .then(res => res.json())
         .then(folders => {
             console.log('获取到的文件夹:', folders);
@@ -620,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         
-        fetch(`backend.php?action=getLyrics&folder=${encodeURIComponent(folder)}&song=${encodeURIComponent(songName)}`)
+        fetch(`/api/lyrics?folder=${encodeURIComponent(folder)}&song=${encodeURIComponent(songName)}`)
             .then(res => res.json())
             .then(data => {
                 console.log('歌词加载结果:', data);
@@ -649,7 +645,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const songNames = songs.map(song => song.name);
         const songsParam = encodeURIComponent(JSON.stringify(songNames));
         
-        fetch(`backend.php?action=getBatchLyrics&folder=${encodeURIComponent(folder)}&songs=${songsParam}`)
+        fetch(`/api/batch-lyrics?folder=${encodeURIComponent(folder)}&songs=${songsParam}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -674,22 +670,21 @@ document.addEventListener("DOMContentLoaded", () => {
         
         currentIndex = index;
         const song = songs[index];
-        const songName = song.name;
+        const displayName = song.name;
         const folder = song.folder;
-        const encodedFilename = encodeURIComponent(songName);
-        const audioUrl = `music/${folder}/${encodedFilename}`;
-        
+        const audioUrl = `music/${encodeURIComponent(folder)}/${encodeURIComponent(displayName)}/${encodeURIComponent(song.file)}`;
+
         console.log('播放歌曲:', audioUrl);
-        
+
         audioPlayer.src = audioUrl;
         audioPlayer.play().catch(error => {
             console.error('播放失败:', error);
         });
-        
-        nowPlayingTitle.textContent = selectedPlaylists.length > 1 ? 
-            `${songName} (${folder})` : songName;
-        
-        loadLyrics(songName, folder);
+
+        nowPlayingTitle.textContent = selectedPlaylists.length > 1 ?
+            `${displayName} (${folder})` : displayName;
+
+        loadLyrics(displayName, folder);
         
         const songPage = Math.floor(index / songsPerPage) + 1;
         if (songPage !== currentPage) {
@@ -835,7 +830,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 缓存管理功能
     function clearLyricsCache() {
         lyricsCache.clear();
-        fetch('backend.php?action=clearLyricsCache')
+        fetch('/api/clear-cache', { method: 'POST' })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
