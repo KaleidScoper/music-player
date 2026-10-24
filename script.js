@@ -457,21 +457,23 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    function preloadLyrics(songsToPreload, folder) {
-        if (songsToPreload.length === 0) return;
-        const songNames = songsToPreload.map(s => s.name);
-        const songsParam = encodeURIComponent(JSON.stringify(songNames));
-
-        fetch(`/api/batch-lyrics?folder=${encodeURIComponent(folder)}&songs=${songsParam}`)
-            .then(res => res.json())
-            .then(data => {
+    async function preloadLyrics(songsToPreload, folder) {
+        const batchSize = 100;
+        for (let offset = 0; offset < songsToPreload.length; offset += batchSize) {
+            const songNames = songsToPreload.slice(offset, offset + batchSize).map(s => s.name);
+            const songsParam = encodeURIComponent(JSON.stringify(songNames));
+            try {
+                const response = await fetch(`/api/batch-lyrics?folder=${encodeURIComponent(folder)}&songs=${songsParam}`);
+                const data = await response.json();
                 if (data.success) {
                     Object.entries(data.results).forEach(([name, result]) => {
                         lyricsCache.set(`${folder}/${name}`, result);
                     });
                 }
-            })
-            .catch(error => console.error("Failed to preload lyrics:", error));
+            } catch (error) {
+                console.error("Failed to preload lyrics:", error);
+            }
+        }
     }
 
     // ---- Audio events ----
