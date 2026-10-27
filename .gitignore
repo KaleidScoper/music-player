@@ -1,0 +1,7 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# 登录凭据与下载记录（本地状态，不要提交）
+cookies.txt
+.bili-archive.txt

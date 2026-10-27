@@ -1,5 +1,8 @@
 # 音乐播放器B站下载功能完整集成方案
 
+> **已废弃**：本文是早期「PHP 集成 + npx bv2mp3」方案，未实施，也不建议再采用。
+> 现行方案见 [`download/download.py`](download.py)（yt-dlp 版）与 [`doc/bilibili-audio-source.md`](../doc/bilibili-audio-source.md)。
+
 ## 📋 项目概述
 
 将现有的独立Python下载脚本(`download.py`)集成到Web音乐播放器中，实现图形化的B站视频下载功能，同时保留原脚本作为备用方案。

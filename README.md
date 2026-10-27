@@ -224,13 +224,38 @@ python -B -m unittest discover -s tests -v
 
 ### B站下载工具
 
-内置批量下载脚本，用于从B站收藏夹搬运音乐。需额外安装 Node.js 和 FFmpeg。
+`download/download.py` 把 B 站视频、收藏夹、合集里的音频按播放器要求的目录结构下载下来。
+只需要 Python、yt-dlp 和 customtkinter（都是纯 pip 包），不需要 Node.js，也不需要 FFmpeg（直接保存 m4a）。
 
 ```bash
-python download/download.py
+pip install -r download/requirements.txt   # 装 yt-dlp + customtkinter
+python download/download.py                # 打开图形界面
 ```
 
-详见 `download/` 目录。
+也可以直接用启动器：Windows 双击 `download/start.bat`，Linux/macOS 执行 `bash download/start.sh`。
+
+图形界面基于 CustomTkinter（暗色、圆角、约 1MB），Windows / macOS / Linux 通用。
+Linux 上界面依赖系统自带的 tkinter：Debian/Ubuntu 需先 `sudo apt install python3-tk`。
+
+界面里粘贴链接后点「解析清单」，确认条目再点「开始下载」。链接支持 BV 号、b23.tv 短链、
+多 P 视频、收藏夹、合集、稍后再看，也可以直接粘贴整段分享文案。
+
+命令行用法：
+
+```bash
+python download/download.py -p "自用歌单" BV1xxxxxxxxx          # 单个视频
+python download/download.py -p "自用歌单" --list <收藏夹链接>    # 只看清单，不下载
+python download/download.py -p "自用歌单" <收藏夹链接>           # 整张收藏夹
+```
+
+- 输出结构：`music/<歌单>/<标题>/<标题>.m4a`，文件夹名就是播放器显示的歌曲名
+- 默认保存最高音质（320k，有 Hi-Res 时优先）的 m4a；`--mp3` 才会转码（需要 FFmpeg）
+- 每个歌单下的 `.bili-archive.txt` 记录已下载的 BV 号，重复执行自动跳过；`--force` 强制重下
+- `--lrc` 尝试用 CC 字幕生成 `.lrc` 歌词（UP 主没传字幕的稿件会跳过）
+- 私有收藏夹、更高码率、会员清晰度需要登录：`--cookies cookies.txt` 或 `--cookies-from-browser chrome`
+- 需要 Python 3.11+（yt-dlp 的要求），服务端本身仍然只需要 Flask
+
+更多参数见 `python download/download.py --help`，方案调研见 `doc/bilibili-audio-source.md`。
 
 ## 技术栈
 
